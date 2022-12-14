@@ -1,26 +1,21 @@
-from contextlib import asynccontextmanager
-
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-from core.config import get_settings
-
-settings = get_settings()
+from core.config import settings
 
 engine = create_async_engine(settings.db_config.database_uri)
 
 Base = declarative_base()
 
 
-def async_session_generator():
+def async_session_generator() -> sessionmaker:
     return sessionmaker(
         engine, class_=AsyncSession
     )
 
 
-@asynccontextmanager
-async def get_session():
+async def get_session() -> AsyncSession:
     """
     Получить сессию БД.
     """

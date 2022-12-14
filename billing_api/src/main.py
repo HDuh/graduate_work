@@ -2,18 +2,18 @@ import logging
 
 import uvicorn
 from fastapi import FastAPI
+from fastapi.responses import ORJSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from fastapi.responses import ORJSONResponse
-
-from api.v1 import some_api
+from api import webhook
+from api.v1 import billing, product
 from core import settings
 
 app = FastAPI(
     title=settings.app.project_name,
     docs_url='/billing/openapi',
     openapi_url='/billing/openapi.json',
-    # default_response_class=ORJSONResponse,
+    default_response_class=ORJSONResponse,
 )
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -30,7 +30,10 @@ async def shutdown():
     ...
 
 
-app.include_router(some_api.router, prefix='/api/v1/billing', tags=['Billing'])
+app.include_router(billing.router, prefix='/api/v1/billing', tags=['Billing'])
+app.include_router(product.router, prefix='/api/v1/product', tags=['Product'])
+
+app.include_router(webhook.router, prefix='/api/webhook', tags=['Webhook'])
 
 if __name__ == '__main__':
     uvicorn.run(
