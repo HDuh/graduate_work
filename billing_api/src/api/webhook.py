@@ -12,12 +12,16 @@ async def webhook(request: Request):
     'stripe listen --forward-to=localhost:8001/api/webhook/'
      """
     json_data = await request.json()
-    print('--' * 20)
-    for k in json_data:
-        print(k, json_data[k])
-    print('--'*20)
-
     event = stripe.Event.construct_from(json_data, stripe.api_key)
-    print(event.type)
-    print('==='*20)
+
+    if event['type'] == 'checkout.session.completed':
+        print(event.type)
+        session = event['data']['object']
+        print(session)
+        print('===' * 20)
+
+    else:
+        print('ANOTHER TYPE')
+        print(event.type)
+
     return {'status': 'success'}
