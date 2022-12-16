@@ -2,6 +2,7 @@ from sqlalchemy import Column, String, Integer, Boolean
 from sqlalchemy.orm import relationship
 
 from .base_model import BaseModel
+from .transitional_models import order_product_table
 
 __all__ = (
     'Product',
@@ -22,6 +23,13 @@ class Product(BaseModel):
     is_active = Column(Boolean, default=True)
 
     subscription = relationship()  # связь one to many
+    order = relationship(
+        'Order',
+        secondary=order_product_table,
+        back_populates='product',
+        lazy='dynamic',
+        passive_deletes=True,
+    )  # связь с заказами many to many
 
     def __str__(self):
         return self.name
