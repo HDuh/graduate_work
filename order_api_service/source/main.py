@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 
 from api.v1 import order
-from core import settings
+from settings import settings
 
 app = FastAPI(
     title=settings.app.project_name,

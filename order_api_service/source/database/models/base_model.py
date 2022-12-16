@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer
 
-from db.base import Base
+from database.base import Base
 
 __all__ = (
     'BaseModel',

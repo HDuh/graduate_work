@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from .base_model import BaseModel
@@ -11,9 +12,8 @@ __all__ = (
 
 class Order(BaseModel):
     __tablename__ = 'order'
-    # id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
 
-    user_id = Column(Integer, ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
     user = relationship('User', back_populates='order')  # many to one
     product = relationship(
         'Product',
