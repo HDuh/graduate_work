@@ -1,4 +1,4 @@
-from schemas.base import BaseSchema
+from source.schemas.base import BaseSchema
 
 
 class ProductCreate(BaseSchema):

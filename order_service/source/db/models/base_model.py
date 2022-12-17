@@ -3,7 +3,7 @@ from uuid import uuid4
 from sqlalchemy import Column
 from sqlalchemy.dialects.postgresql import UUID
 
-from database.base import Base
+from source.db.base import Base
 
 __all__ = (
     'BaseModel',

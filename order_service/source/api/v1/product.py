@@ -3,8 +3,8 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from schemas.product import ProductList, ProductCreate, ProductDetail
-from services.product import ProductService, get_product_service
+from source.schemas.product import ProductList, ProductCreate, ProductDetail
+from source.services.product import ProductService, get_product_service
 
 router = APIRouter()
 
