@@ -1,10 +1,11 @@
 import os
 from functools import lru_cache
 from logging import config as logging_config
+
 from dotenv import load_dotenv
 from pydantic import BaseSettings
 
-from core.logger import LOGGING
+from src.core.logger import LOGGING
 
 __all__ = (
     'settings',

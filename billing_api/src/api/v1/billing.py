@@ -4,7 +4,8 @@ import stripe
 from fastapi import APIRouter, Request
 from fastapi.templating import Jinja2Templates
 
-from core import settings
+from src.core import settings
+from src.schemas.order import OrderSchema
 
 # from fastapi.responses import JSONResponse
 
@@ -20,11 +21,6 @@ async def ping_func() -> dict:
     return {'status': 'ok'}
 
 
-@router.get('/')
-def index(request: Request):
-    return templates.TemplateResponse('index.html', {'request': request})
-
-
 @router.get('/success')
 async def success(request: Request):
     return templates.TemplateResponse('success.html', {'request': request})
@@ -36,28 +32,25 @@ async def cancel(request: Request):
 
 
 @router.post('/create_checkout_session')
-async def create_checkout_session(request: Request) -> Any:
-    data = await request.json()
-
+async def create_checkout_session(
+        order_schema: OrderSchema) -> Any:
     try:
         checkout_session = stripe.checkout.Session.create(
             payment_method_types=['card'],
             line_items=[
                 {
-                    'price': data['priceId'],
-                    'quantity': 1,
+                    'price': order_schema.price_id,
+                    'quantity': order_schema.quantity,
                 },
             ],
-            customer='cus_MzfkseCBsbnIb4',
+            customer=order_schema.customer_id,
             mode='subscription',
-            success_url='http://localhost:8001/api/v1/billing/success?session_id={CHECKOUT_SESSION_ID}',
-            cancel_url='http://localhost:8001/api/v1/billing/cancel',
+            success_url='http://localhost:8000/api/v1/billing/success?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url='http://localhost:8000/api/v1/billing/cancel',
         )
+
+        print(checkout_session)
     except Exception as e:
         return str(e)
 
-    return {"sessionId": checkout_session['id']}
-
-# @router.post('/create_payment_intent')
-# async def create_payment_intent(request: Request):
-#
+    return checkout_session

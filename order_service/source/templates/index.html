@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css">
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="{{ url_for('static', path='script.js') }}"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.14.0/js/all.js"></script>
+    <title>Subscriptions plan</title>
+</head>
+<body>
+<div class="container content is-large">
+    <h1>Plans</h1>
+</div>
+<div class="container">
+
+    <div class="card">
+        <div class="card-content">
+            <button class="button is-dark is-large is-outlined" id="checkout_monthly">Monthly </button>
+            <h5 class="content is-large">100.00 RUB / month</h5>
+            <div class="content">
+                Lorem ipsum leo risus, porta ac consectetur ac, vestibulum at eros. Donec id elit non mi porta gravida
+                at eget metus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
+                Cras mattis consectetur purus sit amet fermentum.
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-content">
+            <button class="button is-primary is-large is-outlined" id="checkout_quarter">Quarter</button>
+            <h5 class="content is-large">80.00 RUB / month</h5>
+            <div class="content">
+                Lorem ipsum leo risus, porta ac consectetur ac, vestibulum at eros. Donec id elit non mi porta gravida
+                at eget metus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
+                Cras mattis consectetur purus sit amet fermentum.
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-content">
+                <button class="button is-success is-large is-outlined" id="checkout_half_year">Half year</button>
+                <h5 class="content is-large">60.00 RUB / month</h5>
+                <div class="content">
+                    Lorem ipsum leo risus, porta ac consectetur ac, vestibulum at eros. Donec id elit non mi porta
+                    gravida
+                    at eget metus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
+                    Cras mattis consectetur purus sit amet fermentum.
+                </div>
+            </div>
+        </div>
+
+
+        <!--    <button id="checkout_half_year"></button>-->
+        <!--    <button id="checkout_one_item"></button>-->
+    </div>
+
+</body>
+</html>
+<style>
+</style>
