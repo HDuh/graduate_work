@@ -4,8 +4,8 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 
-from source.api.v1 import order, webhook
-from source.core import settings
+from src.api.v1 import order, webhook
+from src.core import settings
 
 app = FastAPI(
     title=settings.app.project_name,

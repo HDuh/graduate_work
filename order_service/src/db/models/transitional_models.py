@@ -1,7 +1,7 @@
 from sqlalchemy import Table, Column, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 
-from source.db.base import Base
+from src.db.base import Base
 
 __all__ = (
     'order_product_table',

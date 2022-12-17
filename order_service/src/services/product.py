@@ -1,13 +1,13 @@
 from functools import lru_cache
 
 import stripe
-from source.db.base import get_session
-from source.db.models import Product
+from src.db.base import get_session
+from src.db.models import Product
 from fastapi import Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from source.schemas.product import ProductCreate, ProductList, ProductDetail
+from src.schemas.product import ProductCreate, ProductList, ProductDetail
 
 
 class ProductService:

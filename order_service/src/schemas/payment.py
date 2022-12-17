@@ -1,6 +1,6 @@
-from source.db.models import PaymentState
+from src.db.models import PaymentState
 
-from source.schemas.base import BaseSchema
+from src.schemas.base import BaseSchema
 
 
 class PaymentSchema(BaseSchema):
