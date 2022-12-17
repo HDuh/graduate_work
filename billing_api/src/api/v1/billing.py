@@ -48,6 +48,7 @@ async def create_checkout_session(request: Request) -> Any:
                     'quantity': 1,
                 },
             ],
+            customer='cus_MzfkseCBsbnIb4',
             mode='subscription',
             success_url='http://localhost:8001/api/v1/billing/success?session_id={CHECKOUT_SESSION_ID}',
             cancel_url='http://localhost:8001/api/v1/billing/cancel',
@@ -56,3 +57,7 @@ async def create_checkout_session(request: Request) -> Any:
         return str(e)
 
     return {"sessionId": checkout_session['id']}
+
+# @router.post('/create_payment_intent')
+# async def create_payment_intent(request: Request):
+#
