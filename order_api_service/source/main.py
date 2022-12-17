@@ -32,7 +32,7 @@ if __name__ == '__main__':
         'main:app',
         host='0.0.0.0',
         reload=True,
-        port=8001,
+        port=8002,
         log_config=settings.app.logging,
         log_level=logging.DEBUG,
     )

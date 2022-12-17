@@ -3,7 +3,7 @@ from functools import lru_cache
 from logging import config as logging_config
 
 from dotenv import load_dotenv
-from pydantic import BaseSettings
+from pydantic import BaseSettings, Field
 
 from settings.logger import LOGGING
 
@@ -21,11 +21,12 @@ class AppConfig(BaseSettings):
     Конфигурация приложения.
     """
     base_dir: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    project_name: str
+    project_name: str = '...'
     logging = LOGGING
 
     class Config:
         env_prefix = 'glob_'
+        env_file = os.path.join(BASE_DIR, '.env')
         case_sensitive = False
 
 
@@ -33,11 +34,12 @@ class PostgresConfig(BaseSettings):
     """
     Конфигурация PostgreSQL.
     """
-    database_uri: str
-    db_echo_log: bool
+    database_uri: str = Field(..., env='SQLALCHEMY_DATABASE_URI')
+    db_echo_log: bool = Field(..., env='SQLALCHEMY_DB_ECHO_LOG')
 
     class Config:
         env_prefix = 'sqlalchemy_'
+        # env_file = os.path.join(BASE_DIR, '.env')
         case_sensitive = False
 
 

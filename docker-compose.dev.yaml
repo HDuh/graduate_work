@@ -4,16 +4,16 @@ services:
   postgres:
     image: postgres:13-alpine
     container_name: postgres
-    env_file: ./order_api_service/.env
-#    environment:
-#      POSTGRES_DB: ${POSTGRES_NAME}
-#      POSTGRES_USER: ${POSTGRES_USER}
-#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#    env_file: ./order_api_service/.env
+    environment:
+      POSTGRES_DB: ${POSTGRES_NAME}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
-    networks:
-      - billing-service
+#    networks:
+#      - billing-service
 
-networks:
-  billing-service:
-    driver: bridge
+#networks:
+#  billing-service:
+#    driver: bridge
