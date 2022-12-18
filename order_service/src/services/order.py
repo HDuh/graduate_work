@@ -3,9 +3,9 @@ from uuid import uuid4
 
 from fastapi import Depends
 
-from src.core import SubscriptionStatus, OrderStatus
+from src.core import SubscriptionStatus, OrderStatus, ProductTypes
 from src.services import get_db_manager, DbManager, StripeManager
-from src.db.models import Product, User, Order
+from src.db.models import Product, User, Order, Subscription
 from src.schemas.order import OrderCreate
 
 
@@ -38,6 +38,7 @@ class OrderService:
                 price_id=product.price_stripe_id,
                 quantity=1
             )
+        return
 
 
 @lru_cache()

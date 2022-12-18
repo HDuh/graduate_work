@@ -11,7 +11,8 @@ from .logger import LOGGING
 __all__ = (
     'settings',
     'OrderStatus',
-    'SubscriptionStatus'
+    'SubscriptionStatus',
+    'ProductTypes'
 )
 
 load_dotenv()
@@ -58,10 +59,22 @@ class StripeConfig(BaseSettings):
         case_sensitive = False
 
 
+class BillingConfig(BaseSettings):
+    """
+    Конфигурация сервиса billing
+    """
+    checkout_session_url: str
+
+    class Config:
+        env_prefix = 'billing_'
+        case_sensitive = False
+
+
 class Settings(BaseSettings):
     app = AppConfig()
     db_config = PostgresConfig()
     stripe_config = StripeConfig()
+    billing_config = BillingConfig()
 
 
 class OrderStatus(str, Enum):
@@ -75,6 +88,13 @@ class SubscriptionStatus(str, Enum):
     ACTIVE = "active"
     INACTIVE = "inactive"
 
+
+class ProductTypes(Enum):
+    SUBSCRIPTION = 'subscription'
+
+
+# class WebhookEvents(Enum):
+#     PAYMENT_INTENT_SUCCESS =
 
 @lru_cache(maxsize=128)
 def get_settings() -> Settings:

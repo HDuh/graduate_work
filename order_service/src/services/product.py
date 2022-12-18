@@ -3,7 +3,7 @@ from functools import lru_cache
 import stripe
 from fastapi import Depends
 
-from src.db import get_db_manager, DbManager
+from src.services import get_db_manager, DbManager
 from src.db.models import Product
 from src.schemas.product import ProductCreate, ProductList, ProductDetail
 
