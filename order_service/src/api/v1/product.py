@@ -1,5 +1,6 @@
 from http import HTTPStatus
 from typing import List
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -47,7 +48,7 @@ async def get_product_details(
                response_model=dict,
                status_code=HTTPStatus.OK)
 async def delete_product(
-        product_id: int,
+        product_id: UUID,
         product_service: ProductService = Depends(get_product_service)
 ) -> dict:
     result = await product_service.delete_product(product_id)

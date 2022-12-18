@@ -4,7 +4,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 
-from src.api.v1 import order, webhook
+from src.api.v1 import order, webhook, product
 from src.core import settings
 
 app = FastAPI(
@@ -26,6 +26,7 @@ async def shutdown():
 
 
 app.include_router(order.router, prefix='/api/v1/order', tags=['Order'])
+app.include_router(product.router, prefix='/api/v1/product', tags=['Product'])
 app.include_router(webhook.router, prefix='/api/v1/webhook', tags=['Webhook'])
 
 if __name__ == '__main__':

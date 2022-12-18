@@ -1,4 +1,5 @@
 import stripe
+
 from src.core import settings
 
 __all__ = (
@@ -16,7 +17,7 @@ class StripeManager:
     @classmethod
     def create_payment_intent(cls, product_instance):
         return stripe.PaymentIntent.create(
-            amount=product_instance.price,
+            amount=product_instance.price * 100,
             currency=product_instance.currency_code,
             payment_method_types=['card'],
         )

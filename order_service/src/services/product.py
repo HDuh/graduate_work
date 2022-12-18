@@ -1,28 +1,26 @@
 from functools import lru_cache
 
 import stripe
-from src.db.base import get_session
-from src.db.models import Product
 from fastapi import Depends
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.db import get_db_manager, DbManager
+from src.db.models import Product
 from src.schemas.product import ProductCreate, ProductList, ProductDetail
 
 
 class ProductService:
-    def __init__(self, session: AsyncSession):
-        self.session = session
+    def __init__(self, db_manager: DbManager):
+        self.db_manager = db_manager
 
     async def create_product(self, name: str, description: str, price: int,
-                             period: int = 0, recurring: bool = False,
-                             nickname: str = ''):
+                             product_type: str = 'Subscription', duration: int = 0,
+                             recurring: bool = False, nickname: str = ''):
         recurring_params = None
         if recurring:
             recurring_params = {
                 "aggregate_usage": None,
                 "interval": "month",
-                "interval_count": period,
+                "interval_count": duration,
                 "usage_type": "licensed"
             }
 
@@ -32,7 +30,7 @@ class ProductService:
         )
 
         # цена на продукт
-        stripe.Price.create(
+        price_stipe = stripe.Price.create(
             currency='rub',
             unit_amount=int(price * 100),
             recurring=recurring_params,
@@ -43,35 +41,29 @@ class ProductService:
 
         product_db = Product(
             name=name,
+            product_type=product_type,
+            product_stripe_id=product_stripe['id'],
+            price_stripe_id=price_stipe['id'],
             description=description,
-            period=period,
+            duration=duration,
             price=price,
             recurring=recurring,
             currency_code='rub',
-            product_stripe_id=product_stripe['id']
         )
 
-        self.session.add(product_db)
+        await self.db_manager.add(product_db)
+
         return ProductCreate(**product_db.to_dict())
 
     async def get_product(self, product_id: int) -> ProductDetail | None:
-        result = await self.session.execute(
-            select(Product)
-            .where(Product.id == product_id)
-        )
-
+        result = await self.db_manager.get_by_id(Product, product_id)
         if result := result.scalars().first():
             return ProductDetail(**result.to_dict())
-        return None
+        return
 
     async def get_all(self) -> list[ProductList]:
-        query = await self.session.execute(
-            select(Product)
-            .order_by(
-                Product.id
-            )
-        )
-        query = query.scalars().all()
+
+        query = await self.db_manager.get_all(Product)
         result = []
 
         for row in query:
@@ -80,22 +72,18 @@ class ProductService:
         return result
 
     async def delete_product(self, product_id) -> dict | None:
-        result = await self.session.execute(
-            select(Product)
-            .where(Product.id == product_id)
-        )
+        result = await self.db_manager.remove(Product, product_id)
 
         if result := result.scalars().first():
             stripe.Product.modify(
                 result.product_stripe_id,
                 active=False
             )
-            await self.session.delete(result)
-            return {product_id: 'deleted'}
+            return {'message': f'Product [{product_id}] was deleted.'}
 
-        return None
+        return
 
 
 @lru_cache()
-def get_product_service(session: AsyncSession = Depends(get_session)) -> ProductService:
-    return ProductService(session)
+def get_product_service(db_manager: DbManager = Depends(get_db_manager)) -> ProductService:
+    return ProductService(db_manager)

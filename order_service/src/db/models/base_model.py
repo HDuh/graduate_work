@@ -12,8 +12,7 @@ __all__ = (
 
 class BaseModel(Base):
     __abstract__ = True
-    # TODO: Не генерится в моделях!
-    id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid4, autoincrement=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
 
     def to_dict(self):
         column_names = self.__table__.columns.keys()

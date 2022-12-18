@@ -1,36 +1,51 @@
 from functools import lru_cache
 
-from sqlalchemy import delete, insert, select, update
-from sqlalchemy.engine import row
+from fastapi import Depends
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from .base import get_session
-from src.db.models import User
 
 __all__ = (
     'get_db_manager',
+    'DbManager',
     # 'get_auth_manager'
 )
 
 
 class DbManager:
+    def __init__(self, session):
+        self.session = session
 
-    @classmethod
-    async def async_get_info_by_id(cls, model, idx):
-        async with get_session() as session:
-            result = await session.execute(
-                select(model)
-                .where(model.id == idx)
-            )
-            return result.first()[0]
+    async def get_by_id(self, model, idx):
+        result = await self.session.execute(
+            select(model)
+            .where(model.id == idx)
+        )
+        if result := result.scalars().first():
+            return result
 
-    @classmethod
-    async def async_add_object(cls, model_instance):
-        async with get_session() as session:
-            await session.execute(
-                insert(model_instance)  # класс инстанса сюда
-                .values(**model_instance.dict())
-                .on_conflict_do_nothing()
+        return None
+
+    async def get_all(self, model):
+        result = await self.session.execute(
+            select(model)
+            .order_by(
+                model.id
             )
+        )
+        return result.scalars().all()
+
+    async def add(self, model_instance):
+        self.session.add(model_instance)
+
+    async def remove(self, model, idx):
+        result = await self.session.execute(
+            select(model)
+            .where(model.id == idx)
+        )
+        self.session.delete(result)
+        return result
 
 
 # class AuthManager:
@@ -38,9 +53,9 @@ class DbManager:
 #     async def async_get_user_info(cls, user_id: str):
 #         # тут должен быть запрос в сервис авторизации для получения данных пользователя
 #         return
-
-async def get_db_manager():
-    return DbManager
+@lru_cache
+async def get_db_manager(session: AsyncSession = Depends(get_session)) -> DbManager:
+    return DbManager(session)
 
 # async def get_auth_manager():
 #     return AuthManager

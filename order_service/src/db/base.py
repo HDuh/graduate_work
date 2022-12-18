@@ -1,5 +1,3 @@
-from contextlib import asynccontextmanager
-
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -19,7 +17,6 @@ def async_session_generator() -> sessionmaker:
     )
 
 
-@asynccontextmanager
 async def get_session() -> AsyncSession:
     """
     Получить сессию БД.

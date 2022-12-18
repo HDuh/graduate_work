@@ -1,16 +1,12 @@
 from http import HTTPStatus
 from uuid import uuid4
 
-from fastapi import APIRouter, Request, Depends, HTTPException
-from starlette.responses import JSONResponse
-from starlette.templating import Jinja2Templates
+from fastapi import APIRouter, Depends, HTTPException
 
-from src.db import get_db_manager
+from src.schemas.order import OrderCreate
+from src.services.order import get_order_service, OrderService
 from src.utils.http_bearer_security import security
 from src.utils.token_decoder import get_token_payload
-from src.core import SubscriptionStatus, OrderStatus, settings
-from src.db.models import Order, User, Product
-from src.db import StripeManager
 
 router = APIRouter()
 
@@ -23,29 +19,19 @@ router = APIRouter()
 #     return templates.TemplateResponse('index.html', {'request': request})
 
 
-@router.post('/create_order')
+@router.post('/create_order',
+             response_model=OrderCreate,
+             status_code=HTTPStatus.CREATED)
 async def create_order(product_id=uuid4(),
                        access_token=Depends(security),
-                       db_manager=Depends(get_db_manager)):
-
+                       order_service: OrderService = Depends(get_order_service)) -> OrderCreate:
     token_payload = get_token_payload(access_token.credentials)
     if not (user_id := token_payload.get('user_id')):
         raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
-    # user_id = 'fcd1fe3e-364d-4428-b01e-0d5dae477b99'
-    if not (user := await db_manager.async_get_info_by_id(User, user_id)):
-        customer = StripeManager.create_customer()
-        user = User(id=user_id, customer_id=customer['id'])
 
-    if not user.subscription or user.subscription.status == SubscriptionStatus.INACTIVE:
-        product = await db_manager.async_get_info_by_id(Product, product_id)
-        payment_intent = StripeManager.create_payment_intent(product)
-        new_order = Order(
-            user_id=user.id,
-            pay_intent_id=payment_intent['id'],
-            status=OrderStatus.UNPAID
-        )
-        new_order.append(product) # TODO: отладить
-        await db_manager.async_add_object(new_order)
-        # TODO: передать заказ в сервис оплаты
-    else:
+    # user_id = 'fcd1fe3e-364d-4428-b01e-0d5dae477b99'
+    result = await order_service.create_order(product_id, user_id)
+    if not result:
         raise HTTPException(status_code=HTTPStatus.CONFLICT)
+
+    return result
