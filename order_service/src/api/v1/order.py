@@ -32,5 +32,5 @@ async def create_order(product_id=uuid4(),
     result = await order_service.create_order(product_id, user_id)
     if not result:
         raise HTTPException(status_code=HTTPStatus.CONFLICT)
-
+    # TODO: передать заказ в сервис оплаты (передачу можно реализовать на фронте)
     return result

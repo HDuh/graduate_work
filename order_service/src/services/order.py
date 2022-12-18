@@ -4,7 +4,7 @@ from uuid import uuid4
 from fastapi import Depends
 
 from src.core import SubscriptionStatus, OrderStatus
-from src.db import get_db_manager, DbManager, StripeManager
+from src.services import get_db_manager, DbManager, StripeManager
 from src.db.models import Product, User, Order
 from src.schemas.order import OrderCreate
 
@@ -33,11 +33,11 @@ class OrderService:
             new_order.product.append(product)
             await self.db_manager.add(new_order)
 
-            return OrderCreate(customer_id=user.customer_id,
-                               price_id=product.price_stripe_id,
-                               quantity=1)
-
-            # TODO: передать заказ в сервис оплаты (передачу можно реализовать на фронте)
+            return OrderCreate(
+                customer_id=user.customer_id,
+                price_id=product.price_stripe_id,
+                quantity=1
+            )
 
 
 @lru_cache()
