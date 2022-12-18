@@ -3,6 +3,7 @@ import logging
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
+from starlette.staticfiles import StaticFiles
 
 from src.api.v1 import order, webhook, product
 from src.core import settings
@@ -13,6 +14,9 @@ app = FastAPI(
     openapi_url='/order/openapi.json',
     default_response_class=ORJSONResponse,
 )
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+app.state.stripe_customer_id = None
 
 
 @app.on_event('startup')
