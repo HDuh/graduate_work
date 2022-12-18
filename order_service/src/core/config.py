@@ -1,4 +1,5 @@
 import os
+from enum import Enum
 from functools import lru_cache
 from logging import config as logging_config
 
@@ -9,6 +10,8 @@ from .logger import LOGGING
 
 __all__ = (
     'settings',
+    'OrderStatus',
+    'SubscriptionStatus'
 )
 
 load_dotenv()
@@ -43,9 +46,34 @@ class PostgresConfig(BaseSettings):
         case_sensitive = False
 
 
+class StripeConfig(BaseSettings):
+    """
+    Конфигурация PostgreSQL.
+    """
+    publish_key: str
+    secret_key: str
+
+    class Config:
+        env_prefix = 'stripe_'
+        case_sensitive = False
+
+
 class Settings(BaseSettings):
     app = AppConfig()
-    postgres_config = PostgresConfig()
+    db_config = PostgresConfig()
+    stripe_config = StripeConfig()
+
+
+class OrderStatus(str, Enum):
+    UNPAID = "unpaid"
+    PAID = "paid"
+    ERROR = "error"
+    CANCELED = "canceled"
+
+
+class SubscriptionStatus(str, Enum):
+    ACTIVE = "active"
+    INACTIVE = "inactive"
 
 
 @lru_cache(maxsize=128)

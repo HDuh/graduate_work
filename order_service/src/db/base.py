@@ -1,20 +1,25 @@
+from contextlib import asynccontextmanager
+
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-from settings import settings
+from src.core import settings
 
-engine = create_async_engine(settings.postgres_config.database_uri)
+engine = create_async_engine(settings.db_config.database_uri)
 
 Base = declarative_base()
 
 
 def async_session_generator() -> sessionmaker:
     return sessionmaker(
-        engine, class_=AsyncSession
+        engine,
+        class_=AsyncSession,
+        expire_on_commit=False
     )
 
 
+@asynccontextmanager
 async def get_session() -> AsyncSession:
     """
     Получить сессию БД.

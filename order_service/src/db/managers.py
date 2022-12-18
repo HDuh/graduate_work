@@ -15,11 +15,21 @@ __all__ = (
 class DbManager:
 
     @classmethod
-    async def async_get_user(cls, user_id):
+    async def async_get_info_by_id(cls, model, idx):
         async with get_session() as session:
-            return await session.execute(
-                select(User)
-                .where(User.id == user_id)
+            result = await session.execute(
+                select(model)
+                .where(model.id == idx)
+            )
+            return result.first()[0]
+
+    @classmethod
+    async def async_add_object(cls, model_instance):
+        async with get_session() as session:
+            await session.execute(
+                insert(model_instance)  # класс инстанса сюда
+                .values(**model_instance.dict())
+                .on_conflict_do_nothing()
             )
 
 
@@ -29,10 +39,8 @@ class DbManager:
 #         # тут должен быть запрос в сервис авторизации для получения данных пользователя
 #         return
 
-@lru_cache
 async def get_db_manager():
     return DbManager
-
 
 # async def get_auth_manager():
 #     return AuthManager
