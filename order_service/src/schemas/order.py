@@ -1,9 +1,7 @@
-from uuid import UUID
-
 from src.schemas.base import BaseSchema
 
 
 class OrderCreate(BaseSchema):
-    id: UUID
-    user_id: UUID
-    pay_intent_id: str
+    customer_id: str
+    price_id: str
+    quantity: int

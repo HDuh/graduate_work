@@ -33,7 +33,9 @@ class OrderService:
             new_order.product.append(product)
             await self.db_manager.add(new_order)
 
-            return OrderCreate(**new_order.to_dict())
+            return OrderCreate(customer_id=user.customer_id,
+                               price_id=product.price_stripe_id,
+                               quantity=1)
 
             # TODO: передать заказ в сервис оплаты (передачу можно реализовать на фронте)
 

@@ -25,7 +25,7 @@ class DbManager:
         if result := result.scalars().first():
             return result
 
-        return None
+        return
 
     async def get_all(self, model):
         result = await self.session.execute(
@@ -53,8 +53,9 @@ class DbManager:
 #     async def async_get_user_info(cls, user_id: str):
 #         # тут должен быть запрос в сервис авторизации для получения данных пользователя
 #         return
-@lru_cache
-async def get_db_manager(session: AsyncSession = Depends(get_session)) -> DbManager:
+
+@lru_cache()
+def get_db_manager(session: AsyncSession = Depends(get_session)) -> DbManager:
     return DbManager(session)
 
 # async def get_auth_manager():
