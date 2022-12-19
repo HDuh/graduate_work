@@ -3,9 +3,9 @@ from functools import lru_cache
 import stripe
 from fastapi import Depends
 
-from src.services import get_db_manager, DbManager
 from src.db.models import Product
 from src.schemas.product import ProductCreate, ProductList, ProductDetail
+from src.services import get_db_manager, DbManager
 
 
 class ProductService:
@@ -82,6 +82,9 @@ class ProductService:
             return {'message': f'Product [{product_id}] was deleted.'}
 
         return
+
+    async def get_product_by_product_stripe_id(self, stripe_id):
+        return await self.db_manager.get_product_by_product_stripe_id(stripe_id)
 
 
 @lru_cache()

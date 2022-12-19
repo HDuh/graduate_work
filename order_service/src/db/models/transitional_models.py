@@ -11,6 +11,6 @@ __all__ = (
 order_product_table = Table(
     'order_product',
     Base.metadata,
-    Column('order_id', UUID(as_uuid=True), ForeignKey('order.id')),
-    Column('product_id', UUID(as_uuid=True), ForeignKey('product.id')),
+    Column('order_id', UUID(as_uuid=True), ForeignKey('order.id', ondelete="CASCADE")),
+    Column('product_id', UUID(as_uuid=True), ForeignKey('product.id', ondelete="CASCADE")),
 )

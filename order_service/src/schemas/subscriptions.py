@@ -1,4 +1,14 @@
+import datetime
+from uuid import UUID
+
 from src.schemas.base import BaseSchema
+
+
+class SubscriptionCreate(BaseSchema):
+    user_id: UUID
+    start_date: datetime.datetime
+    end_date: datetime.datetime
+    product_id: UUID
 
 
 class ProductSchema(BaseSchema):
