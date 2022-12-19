@@ -33,7 +33,8 @@ async def cancel(request: Request):
 
 @router.post('/create_checkout_session')
 async def create_checkout_session(
-        order_schema: OrderSchema) -> Any:
+        order_schema: OrderSchema
+) -> Any:
     try:
         checkout_session = stripe.checkout.Session.create(
             payment_method_types=['card'],
@@ -45,8 +46,8 @@ async def create_checkout_session(
             ],
             customer=order_schema.customer_id,
             mode='subscription',
-            success_url='http://localhost:8000/api/v1/billing/success?session_id={CHECKOUT_SESSION_ID}',
-            cancel_url='http://localhost:8000/api/v1/billing/cancel',
+            success_url='http://localhost:8001/api/v1/billing/success?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url='http://localhost:8001/api/v1/billing/cancel',
         )
 
         print(checkout_session)

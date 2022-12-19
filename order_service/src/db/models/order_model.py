@@ -1,4 +1,6 @@
-from sqlalchemy import Column, ForeignKey, String, Enum
+import datetime
+
+from sqlalchemy import Column, ForeignKey, String, Enum, DateTime
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -25,6 +27,7 @@ class Order(BaseModel):
     )  # связь с продуктами many to many
     status = Column(Enum(OrderStatus))
     pay_intent_id = Column(String(128))
+    created_at = Column(DateTime(timezone=True), default=datetime.datetime.utcnow)
 
     def __str__(self):
         return self.name

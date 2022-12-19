@@ -4,7 +4,7 @@ from fastapi import Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .base import get_session
+from src.db.base import get_session
 
 __all__ = (
     'get_db_manager',
