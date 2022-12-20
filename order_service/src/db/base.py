@@ -8,6 +8,10 @@ engine = create_async_engine(settings.db_config.database_uri)
 
 Base = declarative_base()
 
+# session = None
+
+# class Session:
+#     def __init__(self):
 
 def async_session_generator() -> sessionmaker:
     return sessionmaker(

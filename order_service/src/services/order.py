@@ -1,6 +1,8 @@
 from functools import lru_cache
+from uuid import UUID
 
 from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core import SubscriptionStatus, OrderStatus
 from src.db.models import Product, User, Order
@@ -12,15 +14,42 @@ class OrderService:
     def __init__(self, db_manager: DbManager):
         self.db_manager = db_manager
 
-    async def create_order(self, product_id, user_id):
+    async def get_user_instance(self, user_id: UUID):
         if not (user := await self.db_manager.get_by_id(User, user_id)):
             customer = StripeManager.create_customer()
             user = User(id=user_id, customer_id=customer['id'])
             await self.db_manager.add(user)
+        return user
 
+    async def confirm_purchase_option(self, user: User, product_id: UUID):
+        unpaid_same_product = any(
+            order.status == OrderStatus.UNPAID
+            for order in user.order
+            for product in order.product
+            if product.id == product_id
+        )
+        if (
+                (not user.subscription or user.subscription.status == SubscriptionStatus.INACTIVE) and
+                not unpaid_same_product
+        ):
+            return False
+        return True
+
+    async def create_order(self, product_id, user_id):
+        user = await self.get_user_instance(user_id)
+        if not await self.confirm_purchase_option(user, product_id):
+            return
         if not user.subscription or user.subscription.status == SubscriptionStatus.INACTIVE:
-            # TODO: нужна проверка для ограничения создания нескольких UNPAID заказов на один продукт для Юзера
-            # if not any([i.product.id == product_id for i in user.order if i.status == OrderStatus.UNPAID]):
+            if any(
+                    (
+                            product.id
+                            for order in user.order
+                            for product in order.product
+                            if order.status == OrderStatus.UNPAID and product.id == product_id
+                    )
+            ):
+                return
+
             product = await self.db_manager.get_by_id(Product, product_id)
             new_order = Order(
                 user_id=user.id,

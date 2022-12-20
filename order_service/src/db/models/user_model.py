@@ -21,5 +21,5 @@ class User(BaseModel):
     order = relationship(
         'Order',
         back_populates='user',
-        lazy='subquery'
+        lazy='dynamic'
     )
