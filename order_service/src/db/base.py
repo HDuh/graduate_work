@@ -1,32 +1,48 @@
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_scoped_session
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 from src.core import settings
-
+from asyncio import current_task
 engine = create_async_engine(settings.db_config.database_uri)
 
 Base = declarative_base()
 
-# session = None
+# def async_session_generator() -> sessionmaker:
+#     return sessionmaker(
+#         engine,
+#         class_=AsyncSession,
+#         expire_on_commit=False
+#     )
+#
+#
+# async def get_session() -> AsyncSession:
+#     """
+#     Получить сессию БД.
+#     """
+#     try:
+#         async_session = async_session_generator()
+#         async with async_session() as session:
+#             yield session
+#             await session.commit()
+#     except Exception as error:
+#         await session.rollback()
+#         raise error
+#     finally:
+#         await session.close()
 
-# class Session:
-#     def __init__(self):
+# async_session = AsyncSession(engine, expire_on_commit=False)
 
-def async_session_generator() -> sessionmaker:
-    return sessionmaker(
-        engine,
-        class_=AsyncSession,
-        expire_on_commit=False
-    )
+async_session = async_scoped_session(
+    sessionmaker(
+        engine, expire_on_commit=False, class_=AsyncSession
+    ),
+    scopefunc=current_task,
+)
 
 
 async def get_session() -> AsyncSession:
-    """
-    Получить сессию БД.
-    """
     try:
-        async_session = async_session_generator()
         async with async_session() as session:
             yield session
             await session.commit()

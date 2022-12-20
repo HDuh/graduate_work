@@ -2,7 +2,7 @@ from datetime import datetime
 
 from sqlalchemy import Column, DateTime, ForeignKey, Enum
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 
 from src.core import SubscriptionStatus
 from .base_model import BaseModel
@@ -18,10 +18,10 @@ class Subscription(BaseModel):
     user_id = Column(UUID(as_uuid=True), ForeignKey('user.id', ondelete='CASCADE'))  # one to one
     status = Column(Enum(SubscriptionStatus))
     start_date = Column(DateTime(timezone=True), default=datetime.utcnow)
-    end_date = Column(DateTime(timezone=True), nullable=False)
+    end_date = Column(DateTime(timezone=True), nullable=True)
     product_id = Column(UUID(as_uuid=True), ForeignKey('product.id'), nullable=False)
 
-    user = relationship("User", back_populates="subscription", lazy='subquery')
+    # user = relationship("User", lazy='selectin')
 
     def __str__(self):
         return self.name

@@ -1,5 +1,5 @@
 from sqlalchemy import Column, String
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 
 from .base_model import BaseModel
 
@@ -8,18 +8,19 @@ __all__ = (
 )
 
 
+
 class User(BaseModel):
     __tablename__ = 'user'
 
     customer_id = Column(String(128), nullable=False)
     subscription = relationship(
         'Subscription',
-        back_populates='user',
+        backref='user',
         uselist=False,
-        lazy='subquery'
+        lazy='selectin'
     )
     order = relationship(
         'Order',
         back_populates='user',
-        lazy='subquery'
+        lazy='selectin'
     )

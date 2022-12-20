@@ -23,12 +23,12 @@ class Product(BaseModel):
     recurring = Column(Boolean, default=True)
     is_active = Column(Boolean, default=True)
 
-    subscription = relationship("Subscription", lazy='subquery')  # связь one to many
+    subscription = relationship("Subscription", lazy='dynamic')  # связь one to many
     order = relationship(
         'Order',
         secondary=order_product_table,
         back_populates='product',
-        lazy='subquery',
+        lazy='dynamic',
         passive_deletes=True,
     )  # связь с заказами many to many
 

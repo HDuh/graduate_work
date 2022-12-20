@@ -23,7 +23,7 @@ class Order(BaseModel):
         'Product',
         secondary=order_product_table,
         back_populates='order',
-        lazy='subquery'
+        lazy='dynamic'
     )  # связь с продуктами many to many
     status = Column(Enum(OrderStatus))
     pay_intent_id = Column(String(128))
