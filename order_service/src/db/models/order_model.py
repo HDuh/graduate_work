@@ -30,4 +30,4 @@ class Order(BaseModel):
     created_at = Column(DateTime(timezone=True), default=datetime.datetime.utcnow)
 
     def __str__(self):
-        return self.name
+        return f'[ORDER] ID: {self.id} | STATUS: {self.status} | USER: {self.user}'

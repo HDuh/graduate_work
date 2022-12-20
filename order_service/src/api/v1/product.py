@@ -11,12 +11,14 @@ router = APIRouter()
 
 
 @router.get("/",
-            response_model=List[ProductList],
+            response_model=list[ProductList],
             status_code=HTTPStatus.OK)
 async def get_all_products(
         product_service: ProductService = Depends(get_product_service)
 ) -> List[ProductList]:
-    return await product_service.get_all()
+    all_products = await product_service.get_all()
+
+    return [ProductList(**product.to_dict()) for product in all_products]
 
 
 @router.post("/",
@@ -27,6 +29,7 @@ async def create_product(
         product_service: ProductService = Depends(get_product_service)
 ) -> ProductCreate:
     result = await product_service.create_product(**product_schema.dict())
+    result = ProductCreate(**result.to_dict())
     return result
 
 
@@ -34,25 +37,25 @@ async def create_product(
             response_model=ProductDetail,
             status_code=HTTPStatus.OK)
 async def get_product_details(
-        product_id: int,
+        product_id: UUID,
         product_service: ProductService = Depends(get_product_service)
 ) -> ProductDetail:
-    product = await product_service.get_product(product_id)
+    product = await product_service.get_by_id(product_id)
     if not product:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
 
-    return product
+    return ProductDetail(**product.to_dict())
 
 
 @router.delete("/{product_id}",
-               response_model=dict,
                status_code=HTTPStatus.OK)
 async def delete_product(
         product_id: UUID,
         product_service: ProductService = Depends(get_product_service)
 ) -> dict:
-    result = await product_service.delete_product(product_id)
+    result = await product_service.remove(product_id)
+
     if not result:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
 
-    return result
+    return {'result': f'{product_id} was deleted'}

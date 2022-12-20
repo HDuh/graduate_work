@@ -13,11 +13,6 @@ router = APIRouter()
 # templates = Jinja2Templates(directory="templates")
 
 
-# @router.get('/')
-# def index(request: Request):
-#     return templates.TemplateResponse('index.html', {'request': request})
-
-
 @router.post('/create_order',  # Может переименовать в buy product?
              # response_model=OrderCreate,
              status_code=HTTPStatus.CREATED)

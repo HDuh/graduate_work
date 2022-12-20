@@ -87,6 +87,7 @@ class OrderStatus(str, Enum):
 class SubscriptionStatus(str, Enum):
     ACTIVE = "active"
     INACTIVE = "inactive"
+    CANCELLED = "cancelled"
 
 
 class ProductTypes(Enum):
