@@ -11,12 +11,19 @@ router = APIRouter()
 
 
 @router.post('',
+             summary='Create order',
              status_code=HTTPStatus.CREATED)
 async def create_order(product_id=uuid4(),
                        # access_token=Depends(security),
                        order_service: OrderService = Depends(get_order_service),
                        billing_manager: BillingManager = Depends(get_billing_manager)) -> JSONResponse:
-    """ Создание заказа и отправка информации в billing_api, колбэком получаем ссылку на оплату """
+    """
+        ## Create Order
+
+        Save Order instance to DB with status [Unpaid] and send info to _billing_api_.
+
+        Gets __url link__ from _billing_api_ to create __check out session__ and return it.
+    """
     # token_payload = get_token_payload(access_token.credentials)
     # if not (user_id := token_payload.get('user_id')):
     #     raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)

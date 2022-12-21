@@ -13,11 +13,27 @@ router = APIRouter()
 
 
 @router.post('/refund',
+             summary='Refund and cancel subscription',
              status_code=HTTPStatus.OK)
 async def refund(
         refund_schema: RefundCreate,
         order_service: OrderService = Depends(get_order_service)) -> RefundComplete | JSONResponse:
-    """ Возврат денежных средств и отмена подписки """
+    """
+        ## Refund money and cancel subscription.
+
+        Send refund info to stripe.
+
+        If success:
+
+            DB changes:
+             - __user subscription status__:  _[Canceled]_
+             - __user order status__:  _[Canceled]_
+
+        Else:
+
+            Please try again latter :)
+
+     """
     try:
         result = await order_service.create_refund(**refund_schema.dict())
 
@@ -36,11 +52,28 @@ async def refund(
 
 
 @router.post('/deactivate',
+             summary='Suspension of subscription without refund',
              status_code=HTTPStatus.OK)
 async def deactivate_subscription(
         subscription_schema: DeactivateSubscription,
         user_service: UserService = Depends(get_user_service)) -> DeactivateComplete | JSONResponse:
-    """ Приостановление подписки без продления оплаты """
+    """
+        ## Suspension of subscription without refund.
+
+        The subscription is cancelled at the end of the period.
+        Send user subscription update info to stripe.
+
+        If success:
+
+            DB changes:
+             - __user subscription status__:  _[Inactive]_
+
+        Else:
+        
+            Please try again latter :)
+
+     """
+
     result = await user_service.deactivate_subscription(**subscription_schema.dict())
 
     if not result:

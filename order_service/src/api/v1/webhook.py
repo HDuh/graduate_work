@@ -6,12 +6,17 @@ from src.services.webhook import WebhookService, get_webhook_service
 router = APIRouter()
 
 
-@router.post('')
+@router.post('',
+             summary='Event tracking from stripe')
 async def webhook(
         request: Request,
         webhook_service: WebhookService = Depends(get_webhook_service)
 ):
-    """ Отлавливает все события от stripe """
+    """
+    ## Event tracking from stripe
+
+    And working with them through the webhook service
+    """
     json_data = await request.json()
     event = stripe.Event.construct_from(json_data, stripe.api_key)
     event_type = event['type']
