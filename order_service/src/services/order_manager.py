@@ -12,6 +12,9 @@ class OrderManager:
 
     @classmethod
     async def async_build_and_create(cls, user, product):
+        """
+        Сборка и создание заказа
+        """
         order = Order(
             user_id=user.id,
             status=OrderStatus.UNPAID

@@ -11,8 +11,8 @@ from .logger import LOGGING
 __all__ = (
     'settings',
     'OrderStatus',
-    'SubscriptionStatus',
-    'ProductTypes'
+    'ProductTypes',
+    'ActivationChoice',
 )
 
 load_dotenv()
@@ -78,18 +78,27 @@ class Settings(BaseSettings):
 
 
 class OrderStatus(str, Enum):
+    """
+    Статусы заказа
+    """
     UNPAID = "unpaid"
     PAID = "paid"
     ERROR = "error"
     CANCELED = "canceled"
 
 
-class SubscriptionStatus(str, Enum):
+class ActivationChoice(str, Enum):
+    """
+    Статусы активности
+    """
     ACTIVE = "active"
     INACTIVE = "inactive"
 
 
 class ProductTypes(Enum):
+    """
+    Типы продуктов
+    """
     SUBSCRIPTION = 'subscription'
 
 

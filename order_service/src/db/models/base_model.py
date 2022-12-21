@@ -1,5 +1,4 @@
-from uuid import uuid4
-
+import uuid
 from sqlalchemy import Column
 from sqlalchemy.dialects.postgresql import UUID
 
@@ -12,7 +11,7 @@ __all__ = (
 
 class BaseModel(Base):
     __abstract__ = True
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True)
 
     def to_dict(self):
         column_names = self.__table__.columns.keys()

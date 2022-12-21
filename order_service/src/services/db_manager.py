@@ -1,7 +1,8 @@
+from sqlalchemy import update
 from sqlalchemy.future import select
 
 from src.db.base import get_session
-from src.db.models import Subscription, User
+from src.db.models import User
 from src.services import StripeManager
 
 __all__ = (
@@ -22,6 +23,24 @@ class DbManager:
             return result.scalar()
 
     @classmethod
+    async def async_get_by_name(cls, model, name):
+        """
+        Получение данных из БД по name
+        """
+        async with cls.__session() as session:
+            result = await session.execute(select(model).where(model.name == name))
+            return result.scalar()
+
+    @classmethod
+    async def async_get_all(cls, model):
+        """
+        Получение всех данных из модели
+        """
+        async with cls.__session() as session:
+            result = await session.execute(select(model))
+            return result.scalars().all()
+
+    @classmethod
     async def async_save(cls, model):
         """
         Сохранить модель в БД
@@ -30,18 +49,27 @@ class DbManager:
             session.add(model)
 
     @classmethod
-    async def async_get_user_subscription(cls, user_id):
+    async def async_delete(cls, model):
         """
-        Получить подписки пользователя по id
+        Удалить модель из БД
         """
         async with cls.__session() as session:
-            result = await session.execute(
-                select(Subscription).where(Subscription.user_id == user_id)
-            )
-            return result.scalar()
+            await session.delete(model)
 
     @classmethod
-    async def async_check_or_create_user(cls, user_id):
+    async def async_update(cls, model, **kwargs):
+        """
+        Обновить данные модели в БД
+        """
+        async with cls.__session() as session:
+            await session.execute(
+                update(model.__class__)
+                .where(model.__class__.id == model.id)
+                .values(kwargs)
+            )
+
+    @classmethod
+    async def async_get_or_create_user(cls, user_id):
         """
         Проверка наличия/создание пользователя в БД
         """
