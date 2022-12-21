@@ -1,3 +1,4 @@
+import logging
 from http import HTTPStatus
 from uuid import uuid4
 
@@ -8,6 +9,7 @@ from src.services import BillingManager, get_billing_manager
 from src.services.order import get_order_service, OrderService
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @router.post('',
@@ -35,9 +37,11 @@ async def create_order(product_id=uuid4(),
         raise HTTPException(status_code=HTTPStatus.CONFLICT)
 
     response, checkout = await billing_manager.async_checkout(result)
-    if response.status == HTTPStatus.CREATED:
+    print(checkout)
+    if response.status == HTTPStatus.OK:
+        logger.info(f"Order for user [{user_id}] created successfull!")
         return JSONResponse(
-            status_code=HTTPStatus.OK,
+            status_code=HTTPStatus.CREATED,
             content={'message': checkout['url']}
         )
 

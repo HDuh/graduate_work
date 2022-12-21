@@ -3,8 +3,7 @@ __all__ = (
 )
 
 LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-LOG_DEFAULT_HANDLERS = ['console', ]
-
+LOG_DEFAULT_HANDLERS = ['console', 'logfile', ]
 
 LOGGING = {
     'version': 1,
@@ -27,6 +26,12 @@ LOGGING = {
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'logfile': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'logs/logfile.log',
             'formatter': 'verbose',
         },
         'default': {
