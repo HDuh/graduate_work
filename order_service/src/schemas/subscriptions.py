@@ -22,6 +22,14 @@ class SubscriptionCreate(BaseSchema):
     product_id: UUID
 
 
+class SubscriptionUpdate(BaseSchema):
+    user_id: UUID
+    start_date: datetime.datetime
+    end_date: datetime.datetime
+    product_id: UUID
+    status: str
+
+
 class ProductSchema(BaseSchema):
     id: str
     name: str

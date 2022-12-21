@@ -10,7 +10,7 @@ from src.services.product import ProductService, get_product_service
 router = APIRouter()
 
 
-@router.get("/",
+@router.get("",
             response_model=list[ProductList],
             status_code=HTTPStatus.OK)
 async def get_all_products(
@@ -21,7 +21,7 @@ async def get_all_products(
     return [ProductList(**product.to_dict()) for product in all_products]
 
 
-@router.post("/",
+@router.post("",
              response_model=ProductCreate,
              status_code=HTTPStatus.CREATED)
 async def create_product(

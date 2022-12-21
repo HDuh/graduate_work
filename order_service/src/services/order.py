@@ -27,7 +27,7 @@ class OrderService(BaseDBService):
             await self.add(user)
 
         check_orders = await self.user_service.check_unpaid_user_orders(product_id, user_id)
-        check_subscriptions = await self.user_service.check_user_subscriptions(user_id)
+        check_subscriptions = await self.user_service.not_cancelled_subscription(user_id)
 
         if not check_orders and not check_subscriptions:
             product = await self.product_service.get_by_id(product_id)

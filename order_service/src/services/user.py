@@ -4,12 +4,12 @@ from fastapi import Depends
 from sqlalchemy import select, update, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.core import OrderStatus, SubscriptionStatus
 from src.db.base import get_session
 from src.db.models import Product, User, Order, Subscription
+from src.schemas.subscriptions import SubscriptionCreate
 from src.services import StripeManager
 from .base_db_service import BaseDBService
-from ..core import OrderStatus, SubscriptionStatus
-from ..schemas.subscriptions import SubscriptionCreate
 
 
 class UserService(BaseDBService):
@@ -26,6 +26,7 @@ class UserService(BaseDBService):
         )
 
         res = await self.session.execute(stm)
+
         return res.first()
 
     async def last_paid_user_order(self, product_id, user_id):
@@ -45,18 +46,6 @@ class UserService(BaseDBService):
         if result:
             return result.first()
 
-    async def check_user_subscriptions(self, user_id):
-        stm = (
-            select(Subscription)
-            .where(
-                Subscription.status != SubscriptionStatus.CANCELLED,
-                Subscription.user_id == user_id
-            )
-        )
-        res = await self.session.execute(stm)
-
-        return res.first()
-
     async def get_by_customer_id(self, customer_id):
         result = await self.session.execute(
             select(self.model)
@@ -66,7 +55,6 @@ class UserService(BaseDBService):
         result = result.one_or_none()
         if result:
             return result[0]
-        return
 
     async def get_active_subscription(self, user_id):
         result = await self.session.execute(
@@ -81,18 +69,26 @@ class UserService(BaseDBService):
             return result[0]
         return
 
-    async def cancel_subscription(self, user_id):
-        subscription = await self.session.execute(
+    async def not_cancelled_subscription(self, user_id):
+        stm = (
             select(Subscription)
             .where(
-                Subscription.user_id == user_id,
-                Subscription.status == SubscriptionStatus.ACTIVE or Subscription.status == SubscriptionStatus.INACTIVE
+                Subscription.status != SubscriptionStatus.CANCELLED,
+                Subscription.user_id == user_id
             )
         )
+        res = await self.session.execute(stm)
 
-        subscription = subscription.one_or_none()
+        result = res.one_or_none()
+
+        if result:
+            return result[0]
+
+    async def cancel_subscription(self, user_id):
+        subscription = await self.not_cancelled_subscription(user_id)
+
         if subscription:
-            subscription = subscription[0].to_dict()
+            subscription = subscription.to_dict()
             await self.session.execute(
                 update(Subscription)
                 .where(Subscription.id == subscription['id'])
@@ -112,7 +108,6 @@ class UserService(BaseDBService):
                 .values(status=status)
                 .execution_options(synchronize_session="fetch")
             )
-
             return subscription
 
     async def create_subscription(self, user_id, start,
@@ -125,7 +120,7 @@ class UserService(BaseDBService):
             end_date=end,
             product_id=product_id)
 
-        if not await self.check_user_subscriptions(user_id):
+        if not await self.not_cancelled_subscription(user_id):
             await self.add(subscription_db)
             StripeManager.add_user_id_to_subscription(subscription_id, user_id)
             return SubscriptionCreate(**subscription_db.to_dict())
