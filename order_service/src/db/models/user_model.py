@@ -8,7 +8,6 @@ __all__ = (
 )
 
 
-
 class User(BaseModel):
     __tablename__ = 'user'
 

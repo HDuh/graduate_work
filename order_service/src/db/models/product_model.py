@@ -28,7 +28,7 @@ class Product(BaseModel):
         'Order',
         secondary=order_product_table,
         back_populates='product',
-        lazy='dynamic',
+        lazy='selectin',
         passive_deletes=True,
     )  # связь с заказами many to many
 

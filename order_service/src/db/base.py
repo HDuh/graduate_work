@@ -1,9 +1,12 @@
+from contextlib import asynccontextmanager
+
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_scoped_session
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 from src.core import settings
 from asyncio import current_task
+
 engine = create_async_engine(settings.db_config.database_uri)
 
 Base = declarative_base()
@@ -33,15 +36,16 @@ Base = declarative_base()
 
 # async_session = AsyncSession(engine, expire_on_commit=False)
 
-async_session = async_scoped_session(
-    sessionmaker(
-        engine, expire_on_commit=False, class_=AsyncSession
-    ),
-    scopefunc=current_task,
+async_session = sessionmaker(
+    engine, expire_on_commit=False, class_=AsyncSession
 )
 
 
-async def get_session() -> AsyncSession:
+@asynccontextmanager
+async def get_session():
+    """
+    Получить сессию БД.
+    """
     try:
         async with async_session() as session:
             yield session
