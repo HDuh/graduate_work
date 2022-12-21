@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.core import OrderStatus, SubscriptionStatus
 from src.db.base import get_session
 from src.db.models import Product, User, Order, Subscription
-from src.schemas.subscriptions import SubscriptionCreate
+from src.schemas.subscriptions import Create
 from src.services import StripeManager
 from .base_db_service import BaseDBService
 
@@ -123,7 +123,7 @@ class UserService(BaseDBService):
         if not await self.not_cancelled_subscription(user_id):
             await self.add(subscription_db)
             StripeManager.add_user_id_to_subscription(subscription_id, user_id)
-            return SubscriptionCreate(**subscription_db.to_dict())
+            return Create(**subscription_db.to_dict())
 
     async def deactivate_subscription(self, user_id):
 

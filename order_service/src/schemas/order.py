@@ -3,12 +3,12 @@ from uuid import UUID
 from src.schemas.base import BaseSchema
 
 
-class OrderRefundCreate(BaseSchema):
+class RefundCreate(BaseSchema):
     user_id: UUID
     product_id: UUID
 
 
-class OrderRefundComplete(BaseSchema):
+class RefundComplete(BaseSchema):
     user_id: UUID
     amount: int
     product: str
