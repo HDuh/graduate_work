@@ -3,14 +3,14 @@ import stripe
 from src.core import settings
 
 __all__ = (
-    'get_stripe_manager',
-    'StripeManager'
+    'StripeManager',
 )
 
 stripe.api_key = settings.stripe_config.secret_key
 
 
 class StripeManager:
+
     @classmethod
     def create_customer(cls):
         return stripe.Customer.create()
@@ -46,7 +46,3 @@ class StripeManager:
             product_instance.product_stripe_id,
             active=False
         )
-
-
-async def get_stripe_manager():
-    return StripeManager

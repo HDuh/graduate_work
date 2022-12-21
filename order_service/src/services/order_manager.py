@@ -1,11 +1,10 @@
 from src.core import OrderStatus
 from src.db.models import Order
 from src.schemas import OrderSchema
-from .db_manager import get_db_manager
+from .db_manager import DbManager
 
 __all__ = (
     'OrderManager',
-    'get_order_manager',
 )
 
 
@@ -18,14 +17,9 @@ class OrderManager:
             status=OrderStatus.UNPAID
         )
         order.product.append(product)
-        db_manager = await get_db_manager()
-        await db_manager.async_save(order)
+        await DbManager.async_save(order)
         return OrderSchema(
             customer_id=user.customer_id,
-            price_id=product.price_id,
+            price_id=product.price_stripe_id,
             quantity=1,
         )
-
-
-async def get_order_manager():
-    return OrderManager

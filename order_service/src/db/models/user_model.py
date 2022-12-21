@@ -1,5 +1,5 @@
 from sqlalchemy import Column, String
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship
 
 from .base_model import BaseModel
 

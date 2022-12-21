@@ -5,7 +5,7 @@ from fastapi import APIRouter, Request
 from fastapi.templating import Jinja2Templates
 
 from src.core import settings
-from src.schemas.order import OrderSchema
+from src.schemas import OrderSchema
 
 # from fastapi.responses import JSONResponse
 
@@ -32,9 +32,7 @@ async def cancel(request: Request):
 
 
 @router.post('/create_checkout_session')
-async def create_checkout_session(
-        order_schema: OrderSchema
-) -> Any:
+async def create_checkout_session(order_schema: OrderSchema) -> Any:
     try:
         checkout_session = stripe.checkout.Session.create(
             payment_method_types=['card'],
