@@ -41,7 +41,48 @@ class StripeManager:
 
     @classmethod
     def archive_the_product(cls, product_instance):
-        stripe.Product.modify(
+        return stripe.Product.modify(
             product_instance.product_stripe_id,
             active=False
+        )
+
+    @classmethod
+    def add_user_id_to_subscription(cls, subscription_id, user_id):
+        return stripe.Subscription.modify(
+            subscription_id,
+            metadata={"user_id": user_id},
+        )
+
+    @classmethod
+    def cancel_subscription(cls, user_id):
+        subscription_query = stripe.Subscription.search(
+            query=f"status:'active' AND metadata['user_id']:'{user_id}'",
+        )
+        print(subscription_query)
+        subscription_obj = subscription_query['data'][0]
+
+        subscription_id = subscription_obj['id']
+
+        return stripe.Subscription.delete(
+            subscription_id,
+        )
+
+    @classmethod
+    def deactivate_subscription(cls, user_id):
+        subscription_query = stripe.Subscription.search(
+            query=f"status:'active' AND metadata['user_id']:'{user_id}'",
+        )
+        if subscription_query:
+            subscription_obj = subscription_query['data'][0]
+            subscription_id = subscription_obj['id']
+
+            return stripe.Subscription.modify(
+                subscription_id,
+                cancel_at_period_end=True)
+
+    @classmethod
+    def refund(cls, amount, pay_intent_id):
+        return stripe.Refund.create(
+            amount=amount * 100,
+            payment_intent=pay_intent_id,
         )

@@ -1,11 +1,12 @@
 from functools import lru_cache
 
 from fastapi import Depends
-from sqlalchemy import select, update
+from sqlalchemy import select, update, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db.base import get_session
 from src.db.models import Product, User, Order, Subscription
+from src.services import StripeManager
 from .base_db_service import BaseDBService
 from ..core import OrderStatus, SubscriptionStatus
 from ..schemas.subscriptions import SubscriptionCreate
@@ -13,7 +14,7 @@ from ..schemas.subscriptions import SubscriptionCreate
 
 class UserService(BaseDBService):
 
-    async def check_user_orders(self, product_id, user_id):
+    async def check_unpaid_user_orders(self, product_id, user_id):
         stm = (
             select(Order)
             .join(Order.product)
@@ -25,7 +26,24 @@ class UserService(BaseDBService):
         )
 
         res = await self.session.execute(stm)
-        return res.one_or_none()
+        return res.first()
+
+    async def last_paid_user_order(self, product_id, user_id):
+        stm = (
+            select(Order)
+            .join(Order.product)
+            .where(
+                Product.id == product_id,
+                Order.user_id == user_id,
+                Order.status == OrderStatus.PAID
+            )
+            .order_by(desc(Order.created_at))
+        )
+
+        result = await self.session.execute(stm)
+        result = result.scalars()
+        if result:
+            return result.first()
 
     async def check_user_subscriptions(self, user_id):
         stm = (
@@ -37,7 +55,7 @@ class UserService(BaseDBService):
         )
         res = await self.session.execute(stm)
 
-        return res.one_or_none()
+        return res.first()
 
     async def get_by_customer_id(self, customer_id):
         result = await self.session.execute(
@@ -63,18 +81,43 @@ class UserService(BaseDBService):
             return result[0]
         return
 
-    async def update_subscription(self, user_id, status):
-        subscription = await self.get_active_subscription(user_id)
-        sub_id = subscription.to_dict()["id"]
-
-        await self.session.execute(
-            update(Subscription)
-            .where(Subscription.id == sub_id)
-            .values(status=status)
-            .execution_options(synchronize_session="fetch")
+    async def cancel_subscription(self, user_id):
+        subscription = await self.session.execute(
+            select(Subscription)
+            .where(
+                Subscription.user_id == user_id,
+                Subscription.status == SubscriptionStatus.ACTIVE or Subscription.status == SubscriptionStatus.INACTIVE
+            )
         )
 
-    async def create_subscription(self, user_id, start, end, product_id, status=SubscriptionStatus.ACTIVE):
+        subscription = subscription.one_or_none()
+        if subscription:
+            subscription = subscription[0].to_dict()
+            await self.session.execute(
+                update(Subscription)
+                .where(Subscription.id == subscription['id'])
+                .values(status=SubscriptionStatus.CANCELLED)
+                .execution_options(synchronize_session="fetch")
+            )
+
+    async def update_subscription(self, user_id, status):
+        subscription = await self.get_active_subscription(user_id)
+
+        if subscription:
+            sub_id = subscription.to_dict()["id"]
+
+            await self.session.execute(
+                update(Subscription)
+                .where(Subscription.id == sub_id)
+                .values(status=status)
+                .execution_options(synchronize_session="fetch")
+            )
+
+            return subscription
+
+    async def create_subscription(self, user_id, start,
+                                  end, product_id, subscription_id,
+                                  status=SubscriptionStatus.ACTIVE):
         subscription_db = Subscription(
             user_id=user_id,
             status=status,
@@ -82,9 +125,19 @@ class UserService(BaseDBService):
             end_date=end,
             product_id=product_id)
 
-        await self.add(subscription_db)
+        if not await self.check_user_subscriptions(user_id):
+            await self.add(subscription_db)
+            StripeManager.add_user_id_to_subscription(subscription_id, user_id)
+            return SubscriptionCreate(**subscription_db.to_dict())
 
-        return SubscriptionCreate(**subscription_db.to_dict())
+    async def deactivate_subscription(self, user_id):
+
+        if await self.get_by_id(user_id) and await self.get_active_subscription(user_id):
+            StripeManager.deactivate_subscription(user_id)
+
+            result = await self.update_subscription(user_id, SubscriptionStatus.INACTIVE)
+
+            return result
 
 
 @lru_cache()

@@ -52,8 +52,9 @@ async def webhook(
 
         subscription_event = event['data']['object']
         customer_id = subscription_event['customer']
-
+        subscription_id = subscription_event['id']
         print(subscription_event)
+
         product_stripe_id = subscription_event['plan']['product']
         canceled_at = subscription_event['canceled_at']
         user = await user_service.get_by_customer_id(customer_id)
@@ -68,7 +69,8 @@ async def webhook(
                 user_id=user.id,
                 start=start_date,
                 end=end_date,
-                product_id=product.id
+                product_id=product.id,
+                subscription_id=subscription_id
             )
 
             print(subscription)
@@ -81,7 +83,7 @@ async def webhook(
         subscription_event = event['data']['object']
         customer_id = subscription_event['customer']
         if user := await user_service.get_by_customer_id(customer_id):
-            await user_service.update_subscription(user.id, SubscriptionStatus.CANCELLED)
+            await user_service.cancel_subscription(user.id)
             print(f'Subscription for user [{user.id}] was canceled')
 
     # else:

@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core import OrderStatus
 from src.db.base import get_session
-from src.db.models import User, Order
+from src.db.models import User, Order, Product
 from src.schemas.order import OrderCreate
 from src.services import StripeManager
 from .base_db_service import BaseDBService
@@ -26,11 +26,8 @@ class OrderService(BaseDBService):
             user = User(id=user_id, customer_id=customer['id'])
             await self.add(user)
 
-        check_orders = await self.user_service.check_user_orders(product_id, user_id)
+        check_orders = await self.user_service.check_unpaid_user_orders(product_id, user_id)
         check_subscriptions = await self.user_service.check_user_subscriptions(user_id)
-
-        print('Check subs: ', check_subscriptions)
-        print('Check orders: ', check_orders)
 
         if not check_orders and not check_subscriptions:
             product = await self.product_service.get_by_id(product_id)
@@ -47,20 +44,31 @@ class OrderService(BaseDBService):
                 price_id=product.price_stripe_id,
                 quantity=1)
 
-    async def update_order(self, user_id, pay_intent_id):
+    async def update_order(self, user_id, pay_intent_id=None, status=OrderStatus.PAID):
+
+        status_to_search = OrderStatus.PAID
+
+        if status == OrderStatus.PAID:
+            status_to_search = OrderStatus.UNPAID
+
         result = await self.session.execute(
             select(Order)
             .where(
                 Order.user_id == user_id,
-                Order.status == OrderStatus.UNPAID)
+                Order.status == status_to_search)
         )
-        order_id_for_update = result.scalars().first().to_dict()['id']
+        order_obj = result.scalars().first().to_dict()
+
+        if not pay_intent_id:
+            pay_intent_id = order_obj['pay_intent_id']
+
+        order_id_for_update = order_obj['id']
         print(f"ORDER ID FOR UPDATE: {order_id_for_update}")
 
         await self.session.execute(
             update(Order)
             .where(Order.id == order_id_for_update)
-            .values(status=OrderStatus.PAID, pay_intent_id=pay_intent_id)
+            .values(status=status, pay_intent_id=pay_intent_id)
             .execution_options(synchronize_session="fetch")
         )
 
@@ -73,6 +81,29 @@ class OrderService(BaseDBService):
             .execution_options(synchronize_session="fetch")
         )
         return result
+
+    async def create_refund(self, user_id, product_id):
+
+        order: Order = await self.user_service.last_paid_user_order(product_id, user_id)
+        if not order:
+            return
+        product: Product = await self.product_service.get_by_id(product_id)
+
+        amount = product.price
+        pay_intent_id = order.pay_intent_id
+
+        # Refund to stripe
+        StripeManager.refund(amount, pay_intent_id)
+
+        # Cancel subscription to stripe
+        StripeManager.cancel_subscription(user_id)
+
+        await self.update_order(user_id, status=OrderStatus.CANCELED)
+
+        amount = amount
+
+        return {'amount': amount, 'user_id': user_id, 'product': product.name}
+
 
 
 @lru_cache()
