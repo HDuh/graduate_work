@@ -1,17 +1,17 @@
 import os
+from enum import Enum
 from functools import lru_cache
 from logging import config as logging_config
 
-from dotenv import load_dotenv
 from pydantic import BaseSettings
 
 from src.core.logger import LOGGING
 
 __all__ = (
     'settings',
+    'PaymentState',
 )
 
-load_dotenv()
 logging_config.dictConfig(LOGGING)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__name__)))
 
@@ -34,10 +34,10 @@ class PostgresConfig(BaseSettings):
     Конфигурация PostgreSQL.
     """
     database_uri: str
-    db_echo_log: bool
+    db_echo_log: bool = True
 
     class Config:
-        env_prefix = 'sqlalchemy_'
+        env_prefix = 'billing_sqlalchemy_'
         case_sensitive = False
 
 
@@ -57,6 +57,13 @@ class Settings(BaseSettings):
     app = AppConfig()
     db_config = PostgresConfig()
     stripe_config = StripeConfig()
+
+
+class PaymentState(str, Enum):
+    UNPAID = "unpaid"
+    PAID = "paid"
+    ERROR = "error"
+    CANCELED = "canceled"
 
 
 @lru_cache(maxsize=128)

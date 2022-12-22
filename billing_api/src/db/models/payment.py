@@ -1,26 +1,24 @@
-import enum
+from datetime import datetime
 
-from sqlalchemy import Column, Integer, ForeignKey, Enum
+from sqlalchemy import Column, Integer, Enum, String, DateTime
+from sqlalchemy.dialects.postgresql import UUID
 
+from src.core import PaymentState
 from src.db.models import BaseModel
 
 __all__ = (
     'Payment',
-    'PaymentState',
 )
-
-
-class PaymentState(str, enum.Enum):
-    UNPAID = "unpaid"
-    PAID = "paid"
-    ERROR = "error"
-    CANCELED = "canceled"
 
 
 class Payment(BaseModel):
     __tablename__ = "payment"
 
-    invoice_id = Column(Integer)
-    product_id = Column(ForeignKey('product.id'))
-    customer_id = Column(ForeignKey("customer.id"))
-    state = Column(Enum(PaymentState))
+    user_id = Column(UUID(as_uuid=True), nullable=False)
+    order_id = Column(UUID(as_uuid=True), nullable=False)
+    payment_id = Column(Integer, nullable=False)
+    customer_id = Column(String(length=128), nullable=False)
+    state = Column(Enum(PaymentState), nullable=False)
+    service_name = Column(String(length=128), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow)
