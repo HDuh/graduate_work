@@ -1,3 +1,4 @@
+import logging
 from functools import lru_cache
 
 from fastapi import Depends
@@ -8,6 +9,8 @@ from src.db.base import get_session
 from src.db.models import Product
 from src.services.managers.stripe_manager import StripeManager
 from .base_db_service import BaseDBService
+
+logger = logging.getLogger(__name__)
 
 
 class ProductService(BaseDBService):
@@ -46,11 +49,14 @@ class ProductService(BaseDBService):
         )
 
         await self.add(product_db)
+        logger.info(f'Product [{product_db.id}] added to DB.')
 
         return product_db
 
     async def delete_product(self, product_id):
         result = await self.remove(product_id)
+        logger.info(f'Product [{product_id}] removed from DB.')
+
         StripeManager.archive_the_product(result)
 
     async def get_product_by_product_stripe_id(self, product_stripe_id):

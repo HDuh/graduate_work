@@ -1,7 +1,8 @@
+import logging
 from functools import lru_cache
 
 from fastapi import Depends
-from sqlalchemy import select, update, delete
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core import OrderStatus
@@ -12,6 +13,8 @@ from src.services import StripeManager
 from .base_db_service import BaseDBService
 from .product import ProductService, get_product_service
 from .user import UserService, get_user_service
+
+logger = logging.getLogger(__name__)
 
 
 class OrderService(BaseDBService):
@@ -29,20 +32,26 @@ class OrderService(BaseDBService):
         check_orders = await self.user_service.check_unpaid_user_orders(product_id, user_id)
         check_subscriptions = await self.user_service.not_cancelled_subscription(user_id)
 
-        if not check_orders and not check_subscriptions:
-            product = await self.product_service.get_by_id(product_id)
-            new_order = Order(
-                user_id=user.id,
-                status=OrderStatus.UNPAID,
-            )
+        if check_orders:
+            logger.warning(f'User [{user_id}] has UNPAID order.')
+            return
 
-            new_order.product.append(product)
-            await self.add(new_order)
+        if check_subscriptions:
+            logger.warning(f'User [{user_id}] already has subscription.')
+            return
 
-            return OrderCreate(
-                customer_id=user.customer_id,
-                price_id=product.price_stripe_id,
-                quantity=1)
+        product = await self.product_service.get_by_id(product_id)
+        new_order = Order(
+            user_id=user.id,
+            status=OrderStatus.UNPAID,
+        )
+
+        new_order.product.append(product)
+        await self.add(new_order)
+        return OrderCreate(
+            customer_id=user.customer_id,
+            price_id=product.price_stripe_id,
+            quantity=1)
 
     async def update_order(self, user_id, pay_intent_id=None, status=OrderStatus.PAID):
 
@@ -63,7 +72,6 @@ class OrderService(BaseDBService):
             pay_intent_id = order_obj['pay_intent_id']
 
         order_id_for_update = order_obj['id']
-        print(f"ORDER ID FOR UPDATE: {order_id_for_update}")
 
         await self.session.execute(
             update(Order)
@@ -71,16 +79,7 @@ class OrderService(BaseDBService):
             .values(status=status, pay_intent_id=pay_intent_id)
             .execution_options(synchronize_session="fetch")
         )
-
-    async def delete_unpaid_orders(self, user_id):
-        result = await self.session.execute(
-            delete(Order)
-            .where(
-                Order.user_id == user_id
-                and Order.status == OrderStatus.UNPAID)
-            .execution_options(synchronize_session="fetch")
-        )
-        return result
+        logger.info(f'Order [{order_id_for_update}] was updated. Status [{status}]')
 
     async def create_refund(self, user_id, product_id):
 
@@ -101,9 +100,8 @@ class OrderService(BaseDBService):
         await self.update_order(user_id, status=OrderStatus.CANCELED)
 
         amount = amount
-
+        logger.info(f'Refund. amount [{amount}], user [{user_id}], product [{product.name}]')
         return {'amount': amount, 'user_id': user_id, 'product': product.name}
-
 
 
 @lru_cache()

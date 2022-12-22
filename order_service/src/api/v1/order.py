@@ -37,9 +37,9 @@ async def create_order(product_id=uuid4(),
         raise HTTPException(status_code=HTTPStatus.CONFLICT)
 
     response, checkout = await billing_manager.async_checkout(result)
-    print(checkout)
+
     if response.status == HTTPStatus.OK:
-        logger.info(f"Order for user [{user_id}] created successfull!")
+        logger.info(f"Order for user [{user_id}] created successfully! URL {checkout['url']}")
         return JSONResponse(
             status_code=HTTPStatus.CREATED,
             content={'message': checkout['url']}

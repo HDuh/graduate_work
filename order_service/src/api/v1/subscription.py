@@ -1,3 +1,4 @@
+import logging
 from http import HTTPStatus
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -10,6 +11,7 @@ from src.services.order import get_order_service, OrderService
 from src.services.user import get_user_service, UserService
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @router.post('/refund',
@@ -35,11 +37,12 @@ async def refund(
 
      """
     try:
+        logger.info(f'User [ {refund_schema.user_id} ] trying refund money for product [ {refund_schema.product_id} ]')
         result = await order_service.create_refund(**refund_schema.dict())
 
         if not result:
             raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
-
+        logger.info(f'User [ {refund_schema.user_id} ] SUCCESSFULLY refund money for product [ {refund_schema.product_id} ]')
         return RefundComplete(**result)
 
     except InvalidRequestError as _ex:
@@ -78,5 +81,6 @@ async def deactivate_subscription(
 
     if not result:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
+    logger.info(f'User [ {subscription_schema.user_id} ] deactivate subscription.')
 
     return DeactivateComplete(**result.to_dict())

@@ -1,3 +1,4 @@
+import logging
 from http import HTTPStatus
 from uuid import UUID
 
@@ -7,6 +8,7 @@ from src.schemas.product import ProductList, ProductCreate, ProductDetail
 from src.services.product import ProductService, get_product_service
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @router.get("",
@@ -43,7 +45,10 @@ async def create_product(
 
     """
     result = await product_service.create_product(**product_schema.dict())
-    result = ProductCreate(**result.to_dict())
+    result = result.to_dict()
+
+    logger.info(f'Product [ {result["name"]} ] with price [ {result["price"]} ]  successfully created. ')
+    result = ProductCreate(**result)
     return result
 
 
@@ -91,5 +96,6 @@ async def delete_product(
 
     if not result:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
+    logger.info(f'Product [ {product_id} ] was deleted')
 
     return {'result': f'{product_id} was deleted'}

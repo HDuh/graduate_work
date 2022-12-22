@@ -22,7 +22,6 @@ async def webhook(
     event_type = event['type']
     message = 'not happened'
 
-    print('++++' * 20)
     if event_type == 'payment_intent.succeeded':
         print(event_type)
         payment_intent_obj = event['data']['object']
@@ -42,7 +41,5 @@ async def webhook(
     else:
         print('ANOTHER TYPE')
         print(event.type)
-
-    print('++++' * 20)
 
     return {'status': message}

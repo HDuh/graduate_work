@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 from functools import lru_cache
 
@@ -7,6 +8,8 @@ from src.core import SubscriptionStatus
 from src.services.order import OrderService, get_order_service
 from src.services.product import ProductService, get_product_service
 from src.services.user import UserService, get_user_service
+
+logger = logging.getLogger(__name__)
 
 
 class WebhookService:
@@ -28,7 +31,6 @@ class WebhookService:
             updated_order = await self.order_service.update_order(user.id, new_pay_intent_id)
 
             if updated_order:
-                print(f'Order was update: {updated_order.to_dict()}')
                 return f'Order was update: {updated_order.to_dict()}'
 
     async def subscription_updated(self, event_obj):
@@ -53,7 +55,6 @@ class WebhookService:
                 product_id=product.id,
                 subscription_id=subscription_id
             )
-            print(f'Subscription create: {subscription}')
             return f'Subscription create: {subscription}'
 
         else:
@@ -61,14 +62,13 @@ class WebhookService:
                 user_id=user.id,
                 status=SubscriptionStatus.INACTIVE)
 
-            print(f'Subscription updated: {subscription}')
             return f'Subscription updated: {subscription}'
 
     async def subscription_deleted(self, event_obj):
         customer_id = event_obj['customer']
         if user := await self.user_service.get_by_customer_id(customer_id):
             await self.user_service.cancel_subscription(user.id)
-            print(f'Subscription for user [{user.id}] was canceled')
+
             return f'Subscription for user [{user.id}] was canceled'
 
 

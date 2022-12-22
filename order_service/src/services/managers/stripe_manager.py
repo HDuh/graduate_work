@@ -1,3 +1,5 @@
+import logging
+
 import stripe
 
 from src.core import settings
@@ -7,31 +9,41 @@ __all__ = (
 )
 
 stripe.api_key = settings.stripe_config.secret_key
+logger = logging.getLogger(__name__)
 
 
 class StripeManager:
     @classmethod
     def create_customer(cls):
-        return stripe.Customer.create()
+        customer = stripe.Customer.create()
+
+        logger.info(f'Customer [{customer["id"]}] created.')
+        return customer
 
     @classmethod
     def create_payment_intent(cls, product_instance):
-        return stripe.PaymentIntent.create(
+        pay_intent = stripe.PaymentIntent.create(
             amount=product_instance.price * 100,
             currency=product_instance.currency_code,
             payment_method_types=['card'],
         )
 
+        logger.info(f'Payment intent [{pay_intent["id"]}] created.')
+        return pay_intent
+
     @classmethod
     def create_product(cls, name, description):
-        return stripe.Product.create(
+        product = stripe.Product.create(
             name=name,
             description=description,
         )
 
+        logger.info(f'Product [{product["id"]}] created.')
+        return product
+
     @classmethod
     def create_price(cls, price, recurring_params, nickname, product_stripe_id):
-        return stripe.Price.create(
+        price = stripe.Price.create(
             currency='rub',
             unit_amount=int(price * 100),
             recurring=recurring_params,
@@ -39,33 +51,39 @@ class StripeManager:
             product=product_stripe_id
         )
 
+        return price
+
     @classmethod
     def archive_the_product(cls, product_instance):
-        return stripe.Product.modify(
+        product = stripe.Product.modify(
             product_instance.product_stripe_id,
             active=False
         )
+        logger.info(f'Product [{product["id"]}] archived.')
+        return product
 
     @classmethod
     def add_user_id_to_subscription(cls, subscription_id, user_id):
-        return stripe.Subscription.modify(
+        result = stripe.Subscription.modify(
             subscription_id,
             metadata={"user_id": user_id},
         )
+        logger.info(f'User id [{user_id}] added to subscription [{subscription_id}] .')
+        return result
 
     @classmethod
     def cancel_subscription(cls, user_id):
         subscription_query = stripe.Subscription.search(
             query=f"status:'active' AND metadata['user_id']:'{user_id}'",
         )
-        print(subscription_query)
         subscription_obj = subscription_query['data'][0]
-
         subscription_id = subscription_obj['id']
 
-        return stripe.Subscription.delete(
+        result = stripe.Subscription.delete(
             subscription_id,
         )
+        logger.info(f'Subscription cancelled for user [{user_id}].')
+        return result
 
     @classmethod
     def deactivate_subscription(cls, user_id):
@@ -76,13 +94,18 @@ class StripeManager:
             subscription_obj = subscription_query['data'][0]
             subscription_id = subscription_obj['id']
 
-            return stripe.Subscription.modify(
+            result = stripe.Subscription.modify(
                 subscription_id,
                 cancel_at_period_end=True)
 
+            logger.info(f'Subscription deactivated for user [{user_id}].')
+            return result
+
     @classmethod
     def refund(cls, amount, pay_intent_id):
-        return stripe.Refund.create(
+        refund = stripe.Refund.create(
             amount=amount * 100,
             payment_intent=pay_intent_id,
         )
+        logger.info(f'Refund for payment intent [{pay_intent_id}].')
+        return refund
