@@ -31,7 +31,7 @@ LOGGING = {
         'logfile': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': 'logs/logfile.log',
+            'filename': './src/logs/logfile.log',
             'formatter': 'verbose',
         },
         'default': {

@@ -4,13 +4,59 @@ services:
   postgres:
     image: postgres:13-alpine
     container_name: postgres
-#    env_file: ./order_service/.env
     environment:
       POSTGRES_DB: ${POSTGRES_NAME}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
+#    networks:
+#      - billing-service
+
+  billing_api:
+    build: billing_api
+    container_name: billing-api
+    volumes:
+      - ./billing_api:/app
+    depends_on:
+      - postgres
+    env_file:
+      - .env
+    restart: always
+    ports:
+      - "8001:8001"
+#    networks:
+#      - billing-service
+
+  order_service:
+    build: order_service
+    container_name: order-service
+    depends_on:
+      - postgres
+    volumes:
+      - ./order_service:/app
+    env_file:
+      - .env
+    restart: always
+    ports:
+      - "8002:8002"
+#    networks:
+#      - billing-service
+
+  nginx:
+    container_name: nginx-billing
+    image: nginx:${NGINX_VERSION}-alpine
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/configs/billing.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - billing_api
+      - order_service
+    ports:
+      - "80:80"
 #    networks:
 #      - billing-service
 
