@@ -3,6 +3,7 @@ from enum import Enum
 from functools import lru_cache
 from logging import config as logging_config
 
+from dotenv import load_dotenv
 from pydantic import BaseSettings
 
 from src.core.logger import LOGGING
@@ -12,6 +13,7 @@ __all__ = (
     'PaymentState',
 )
 
+load_dotenv()
 logging_config.dictConfig(LOGGING)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__name__)))
 

@@ -1,0 +1,22 @@
+version: '3.9'
+
+services:
+  postgres_orders:
+    image: postgres:14.2-alpine
+    container_name: postgres_ordersя
+    environment:
+      POSTGRES_DB: ${POSTGRES_NAME}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - ${POSTGRES_PORT}:5432
+
+  postgres_billing:
+    image: postgres:14.2-alpine
+    container_name: postgres_billing
+    environment:
+      POSTGRES_DB: ${BILLING_POSTGRES_NAME}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - ${BILLING_POSTGRES_PORT}:5432
