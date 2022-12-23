@@ -64,7 +64,8 @@ class UserService(BaseDBService):
             select(Subscription)
             .where(
                 Subscription.user_id == user_id,
-                Subscription.status == SubscriptionStatus.ACTIVE)
+                Subscription.status == SubscriptionStatus.ACTIVE
+            )
         )
         result = result.one_or_none()
 

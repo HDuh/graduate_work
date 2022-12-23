@@ -1,5 +1,7 @@
 from uuid import UUID
 
+from pydantic import Field
+
 from src.schemas.base import BaseSchema
 
 
@@ -15,6 +17,10 @@ class RefundComplete(BaseSchema):
 
 
 class OrderCreate(BaseSchema):
+    user_id: UUID
+    order_id: UUID
+    payment_id: str = Field(default='')
     customer_id: str
     price_id: str
     quantity: int
+    service_name: str

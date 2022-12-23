@@ -14,6 +14,7 @@ app = FastAPI(
     default_response_class=ORJSONResponse,
 )
 
+
 # app.mount("./static", StaticFiles(directory="static"), name="static")
 
 @app.on_event('startup')
@@ -26,8 +27,7 @@ async def shutdown():
     ...
 
 
-app.include_router(billing.router, prefix='/api/v1/billing', tags=['Billing'])
-
+app.include_router(billing.router, prefix='/api/v1/payment', tags=['Billing'])
 
 if __name__ == '__main__':
     uvicorn.run(

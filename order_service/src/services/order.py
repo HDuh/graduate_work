@@ -45,13 +45,15 @@ class OrderService(BaseDBService):
             user_id=user.id,
             status=OrderStatus.UNPAID,
         )
-
-        new_order.product.append(product)
         await self.add(new_order)
         return OrderCreate(
+            user_id=user.id,
+            order_id=new_order.id,
             customer_id=user.customer_id,
             price_id=product.price_stripe_id,
-            quantity=1)
+            quantity=1,
+            service_name='order_service'
+        )
 
     async def update_order(self, user_id, pay_intent_id=None, status=OrderStatus.PAID):
 

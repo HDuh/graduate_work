@@ -33,6 +33,7 @@ class BaseDBService:
 
     async def add(self, model_instance):
         self.session.add(model_instance)
+        await self.session.commit()
 
     async def remove(self, idx):
 
