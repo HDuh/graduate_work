@@ -10,8 +10,6 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - ${POSTGRES_PORT}:5432
-#    networks:
-#      - billing-service
 
   postgres_billing:
     image: postgres:13-alpine
@@ -22,11 +20,11 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - ${BILLING_POSTGRES_PORT}:5432
-  #    networks:
-  #      - billing-service
 
   billing_api:
-    build: billing_api
+    build:
+      context: ./billing_api
+      dockerfile: Dockerfile
     container_name: billing-api
     volumes:
       - ./billing_api:/app
@@ -37,11 +35,11 @@ services:
     restart: always
     ports:
       - "8001:8001"
-#    networks:
-#      - billing-service
 
   order_service:
-    build: order_service
+    build:
+      context: ./order_service
+      dockerfile: Dockerfile
     container_name: order-service
     depends_on:
       - postgres_orders
@@ -52,8 +50,6 @@ services:
     restart: always
     ports:
       - "8002:8002"
-#    networks:
-#      - billing-service
 
   nginx:
     container_name: nginx-billing
@@ -69,9 +65,23 @@ services:
       - order_service
     ports:
       - "80:80"
-#    networks:
-#      - billing-service
 
-#networks:
-#  billing-service:
-#    driver: bridge
+  webhook-billing:
+    image: stripe/stripe-cli:latest
+    container_name: webhook-billing
+    command: listen --forward-to http://billing_api:8001/api/v1/webhook
+    environment:
+      STRIPE_API_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_DEVICE_NAME: ${STRIPE_DEVICE_NAME}
+    depends_on:
+      - billing_api
+
+  webhook-order:
+    image: stripe/stripe-cli:latest
+    container_name: webhook-order
+    command: listen --forward-to http://order_service:8002/api/v1/webhook
+    environment:
+      STRIPE_API_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_DEVICE_NAME: ${STRIPE_DEVICE_NAME}
+    depends_on:
+      - order_service

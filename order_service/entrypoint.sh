@@ -10,4 +10,4 @@ echo "PostgreSQL started"
 
 echo "Starting backend"
 
-python ./src/main.py
+gunicorn src.main:app -w 9 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8002

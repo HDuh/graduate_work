@@ -43,6 +43,7 @@ async def create_order(product_id=uuid4(),
         return JSONResponse(
             status_code=HTTPStatus.CREATED,
             content={'message': checkout['url']}
+            # content=checkout
         )
 
     return JSONResponse(

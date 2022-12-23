@@ -6,13 +6,14 @@ ENV PATH="${PATH}:/root/.local/bin"
 
 
 COPY requirements.txt .
-
+COPY entrypoint.sh .
 RUN pip install --upgrade pip --no-cache-dir\
     && pip install -r requirements.txt --no-cache-dir
 
 
 RUN mkdir /app
 WORKDIR /app/
+COPY . .
 
-EXPOSE 8001
-ENTRYPOINT python ./src/main.py
+RUN apt update && apt install -y netcat && chmod +x ./entrypoint.sh
+ENTRYPOINT sh ./entrypoint.sh

@@ -15,6 +15,5 @@ RUN mkdir /app
 WORKDIR  /app/
 COPY . .
 
-EXPOSE 8002
 RUN apt update && apt install -y netcat && chmod +x ./entrypoint.sh
-ENTRYPOINT ["sh", "./entrypoint.sh"]
+ENTRYPOINT sh ./entrypoint.sh
