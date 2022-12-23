@@ -13,12 +13,16 @@ class BaseDBService:
         self.model = model
 
     async def get_by_id(self, **kwargs):
-        result = await self.session.execute(select(self.model).filter_by(**kwargs))
-        return result.scalar()
-
-    async def get_all(self):
         result = await self.session.execute(
             select(self.model)
+            .filter_by(**kwargs)
+        )
+        return result.scalar()
+
+    async def get_all(self, **kwargs):
+        result = await self.session.execute(
+            select(self.model)
+            .filter_by(**kwargs)
             .order_by(self.model.id)
         )
         return result.scalars().all()

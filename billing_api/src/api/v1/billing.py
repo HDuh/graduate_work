@@ -65,17 +65,17 @@ async def get_all_payment_info(
 
 
 @router.get(
-    '/{user_id}',
+    '/user/{user_id}',
     summary='',
-    response_model=PaymentFullSchema,
+    response_model=list[PaymentFullSchema],
     status_code=HTTPStatus.OK
 )
 async def full_info_by_user(
         user_id: UUID,
         payment_service: PaymentService = Depends(get_payment_service)
-) -> PaymentFullSchema:
+) -> list[PaymentFullSchema]:
     """
-        ## Get detailed information about payment by user ID the information below:
+        ## Get list of detailed information about payments by user ID the information below:
         _id_
         _user_id_
         _order_id_
@@ -90,16 +90,16 @@ async def full_info_by_user(
         URL params:
         - **{user_id}**
     """
-    if not (payment := await payment_service.get_by_id(user_id=user_id)):
+    if not (user_payments := await payment_service.get_all(user_id=user_id)):
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
             detail=f'User {user_id} not found'
         )
-    return PaymentFullSchema(**payment.__dict__)
+    return [PaymentFullSchema(**payment.__dict__) for payment in user_payments]
 
 
 @router.get(
-    '/{order_id}',
+    '/order/{order_id}',
     summary='',
     response_model=PaymentFullSchema,
     status_code=HTTPStatus.OK

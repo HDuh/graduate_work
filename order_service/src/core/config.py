@@ -3,7 +3,6 @@ from enum import Enum
 from functools import lru_cache
 from logging import config as logging_config
 
-from dotenv import load_dotenv
 from pydantic import BaseSettings, Field
 
 from .logger import LOGGING
@@ -15,7 +14,6 @@ __all__ = (
     'ProductTypes'
 )
 
-load_dotenv()
 logging_config.dictConfig(LOGGING)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__name__)))
 
@@ -93,9 +91,6 @@ class SubscriptionStatus(str, Enum):
 class ProductTypes(Enum):
     SUBSCRIPTION = 'subscription'
 
-
-# class WebhookEvents(Enum):
-#     PAYMENT_INTENT_SUCCESS =
 
 @lru_cache(maxsize=128)
 def get_settings() -> Settings:

@@ -3,7 +3,7 @@ version: '3.9'
 services:
   postgres_orders:
     image: postgres:14.2-alpine
-    container_name: postgres_ordersя
+    container_name: postgres_orders
     environment:
       POSTGRES_DB: ${POSTGRES_NAME}
       POSTGRES_USER: ${POSTGRES_USER}
