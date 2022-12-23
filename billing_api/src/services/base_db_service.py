@@ -1,10 +1,9 @@
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 __all__ = (
     'BaseDBService',
 )
-
-from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class BaseDBService:
