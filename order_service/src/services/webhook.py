@@ -3,11 +3,11 @@ from datetime import datetime
 from functools import lru_cache
 
 from fastapi import Depends
-
-from src.core import SubscriptionStatus
 from src.services.order import OrderService, get_order_service
 from src.services.product import ProductService, get_product_service
 from src.services.user import UserService, get_user_service
+
+from src.core import SubscriptionStatus
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +44,7 @@ class WebhookService:
 
         if not canceled_at:
             product = await self.product_service.get_product_by_product_stripe_id(product_stripe_id)
-            order = await self.user_service.last_paid_user_order(product.id, user.id)
+
             start_date = datetime.utcfromtimestamp(event_obj['current_period_start'])
             end_date = datetime.utcfromtimestamp(event_obj['current_period_end'])
             subscription = await self.user_service.create_subscription(
@@ -53,7 +53,6 @@ class WebhookService:
                 end=end_date,
                 product_id=product.id,
                 subscription_id=subscription_id,
-                order_id=order.id,
             )
             return f'Subscription create: {subscription}'
 

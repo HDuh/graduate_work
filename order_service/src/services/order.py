@@ -5,11 +5,11 @@ from uuid import uuid4
 from fastapi import Depends
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+from src.schemas.order import OrderCreate
 
 from src.core import OrderStatus
 from src.db.base import get_session
 from src.db.models import User, Order, Product
-from src.schemas.order import OrderCreate
 from src.services import StripeManager
 from .base_db_service import BaseDBService
 from .product import ProductService, get_product_service
@@ -83,6 +83,8 @@ class OrderService(BaseDBService):
             .values(status=status, pay_intent_id=pay_intent_id)
             .execution_options(synchronize_session="fetch")
         )
+        await self.session.commit()
+
         logger.info(f'Order [{order_id_for_update}] was updated. Status [{status}]')
 
     async def create_refund(self, user_id, product_id):
