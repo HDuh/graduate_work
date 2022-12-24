@@ -4,11 +4,11 @@ from functools import lru_cache
 from fastapi import Depends
 from sqlalchemy import select, update, desc
 from sqlalchemy.ext.asyncio import AsyncSession
+from src.schemas.subscriptions import Create
 
 from src.core import OrderStatus, SubscriptionStatus
 from src.db.base import get_session
 from src.db.models import Product, User, Order, Subscription
-from src.schemas.subscriptions import Create
 from src.services import StripeManager
 from .base_db_service import BaseDBService
 
@@ -31,6 +31,22 @@ class UserService(BaseDBService):
         res = await self.session.execute(stm)
 
         return res.first()
+
+    async def last_user_order(self, product_id, user_id):
+        stm = (
+            select(Order)
+            .join(Order.product)
+            .where(
+                Product.id == product_id,
+                Order.user_id == user_id,
+            )
+            .order_by(desc(Order.created_at))
+        )
+
+        result = await self.session.execute(stm)
+        result = result.scalars()
+        if result:
+            return result.first()
 
     async def last_paid_user_order(self, product_id, user_id):
         stm = (
@@ -117,7 +133,7 @@ class UserService(BaseDBService):
             return subscription
 
     async def create_subscription(self, user_id, start,
-                                  end, product_id, subscription_id, order_id,
+                                  end, product_id, subscription_id,
                                   status=SubscriptionStatus.ACTIVE):
         subscription_db = Subscription(
             user_id=user_id,
@@ -127,6 +143,9 @@ class UserService(BaseDBService):
             product_id=product_id)
 
         if not await self.not_cancelled_subscription(user_id):
+            order = await self.last_user_order(product_id, user_id)
+
+            order_id = order.id
             await self.add(subscription_db)
             StripeManager.add_to_metadata(subscription_id, user_id, order_id)
 
