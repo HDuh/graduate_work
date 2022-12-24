@@ -12,5 +12,7 @@ run:
 	docker-compose -f docker-compose.dev.yaml up -d --build
 
 migrations:
+	docker exec -it order-service alembic revision -m "init" --autogenerate
 	docker exec -it order-service alembic upgrade head
+	docker exec -it billing-api alembic revision -m "init" --autogenerate
 	docker exec -it billing-api alembic upgrade head

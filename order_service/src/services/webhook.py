@@ -44,16 +44,17 @@ class WebhookService:
 
         if not canceled_at:
             product = await self.product_service.get_product_by_product_stripe_id(product_stripe_id)
-
+            order = await self.user_service.last_paid_user_order(product.id, user.id)
             start_date = datetime.utcfromtimestamp(event_obj['current_period_start'])
             end_date = datetime.utcfromtimestamp(event_obj['current_period_end'])
-
+            print('ORDER!!!', order)
             subscription = await self.user_service.create_subscription(
                 user_id=user.id,
                 start=start_date,
                 end=end_date,
                 product_id=product.id,
-                subscription_id=subscription_id
+                subscription_id=subscription_id,
+                order_id=order.id,
             )
             return f'Subscription create: {subscription}'
 

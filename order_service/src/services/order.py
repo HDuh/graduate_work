@@ -45,6 +45,7 @@ class OrderService(BaseDBService):
             user_id=user.id,
             status=OrderStatus.UNPAID,
         )
+        new_order.product.append(product)
         await self.add(new_order)
         return OrderCreate(
             user_id=user.id,
@@ -94,7 +95,7 @@ class OrderService(BaseDBService):
         pay_intent_id = order.pay_intent_id
 
         # Refund to stripe
-        StripeManager.refund(amount, pay_intent_id)
+        StripeManager.refund(amount, pay_intent_id, order.id)
 
         # Cancel subscription to stripe
         StripeManager.cancel_subscription(user_id)
@@ -104,6 +105,13 @@ class OrderService(BaseDBService):
         amount = amount
         logger.info(f'Refund. amount [{amount}], user [{user_id}], product [{product.name}]')
         return {'amount': amount, 'user_id': user_id, 'product': product.name}
+
+    async def set_payment_id(self, order_id, **kwargs):
+        await self.session.execute(
+            update(Order)
+            .where(self.model.id == order_id)
+            .values(**kwargs)
+        )
 
 
 @lru_cache()

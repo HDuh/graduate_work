@@ -11,7 +11,7 @@ __all__ = (
     'settings',
     'OrderStatus',
     'SubscriptionStatus',
-    'ProductTypes'
+    'ProductTypes',
 )
 
 logging_config.dictConfig(LOGGING)

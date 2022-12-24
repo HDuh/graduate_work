@@ -39,8 +39,11 @@ class StripeManager:
             ],
             customer=order.customer_id,
             mode='subscription',
-            success_url='http://localhost:8001/api/v1/billing/success?session_id={CHECKOUT_SESSION_ID}',
-            cancel_url='http://localhost:8001/api/v1/billing/cancel',
+            success_url='http://billing_api:8001/api/v1/payment/success?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url='http://billing_api:8001/api/v1/payment/cancel',
+            metadata={
+                'order_id': order.order_id,
+            }
         )
         logger.info(f'Checkout session created.')
         return checkout_session

@@ -63,12 +63,16 @@ class StripeManager:
         return product
 
     @classmethod
-    def add_user_id_to_subscription(cls, subscription_id, user_id):
+    def add_to_metadata(cls, subscription_id, user_id, order_id):
         result = stripe.Subscription.modify(
             subscription_id,
-            metadata={"user_id": user_id},
+            metadata={
+                "user_id": user_id,
+                "order_id": order_id,
+            },
         )
         logger.info(f'User id [{user_id}] added to subscription [{subscription_id}] .')
+        logger.info(f'Order id [{order_id}] added to subscription [{subscription_id}] .')
         return result
 
     @classmethod
@@ -102,10 +106,13 @@ class StripeManager:
             return result
 
     @classmethod
-    def refund(cls, amount, pay_intent_id):
+    def refund(cls, amount, pay_intent_id, order_id):
         refund = stripe.Refund.create(
             amount=amount * 100,
             payment_intent=pay_intent_id,
+            metadata={
+                'order_id': order_id,
+            }
         )
         logger.info(f'Refund for payment intent [{pay_intent_id}].')
         return refund

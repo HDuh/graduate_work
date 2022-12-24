@@ -69,19 +69,19 @@ services:
   webhook-billing:
     image: stripe/stripe-cli:latest
     container_name: webhook-billing
-    command: listen --forward-to http://billing_api:8001/api/v1/webhook
+    command: listen --forward-to http://billing_api:8001/api/v1/payment/webhook
     environment:
       STRIPE_API_KEY: ${STRIPE_SECRET_KEY}
-      STRIPE_DEVICE_NAME: ${STRIPE_DEVICE_NAME}
+      STRIPE_DEVICE_NAME: ${STRIPE_DEVICE_NAME_BILLING}
     depends_on:
       - billing_api
 
   webhook-order:
     image: stripe/stripe-cli:latest
     container_name: webhook-order
-    command: listen --forward-to http://order_service:8002/api/v1/webhook
+    command: listen --forward-to http://order_service:8002/api/v1/order/webhook
     environment:
       STRIPE_API_KEY: ${STRIPE_SECRET_KEY}
-      STRIPE_DEVICE_NAME: ${STRIPE_DEVICE_NAME}
+      STRIPE_DEVICE_NAME: ${STRIPE_DEVICE_NAME_ORDER}
     depends_on:
       - order_service

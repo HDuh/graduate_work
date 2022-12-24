@@ -18,7 +18,6 @@ class Order(BaseModel):
 
     user_id = Column(UUID(as_uuid=True), ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
     user = relationship('User', back_populates='order')  # many to one
-    # product_id = Column(UUID(as_uuid=True), ForeignKey('product.id'), nullable=False)
     product = relationship(
         'Product',
         secondary=order_product_table,
@@ -28,6 +27,3 @@ class Order(BaseModel):
     status = Column(Enum(OrderStatus))
     pay_intent_id = Column(String(128))
     created_at = Column(DateTime(timezone=True), default=datetime.datetime.utcnow)
-
-    def __str__(self):
-        return f'[ORDER] ID: {self.id} | STATUS: {self.status} | USER: {self.user}'

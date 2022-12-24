@@ -10,7 +10,6 @@ __all__ = (
 class OrderSchema(BaseModel):
     user_id: UUID
     order_id: UUID
-    payment_id: str | None
     customer_id: str
     price_id: str
     quantity: int

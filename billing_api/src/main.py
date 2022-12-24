@@ -4,7 +4,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 
-from src.api.v1 import billing
+from src.api.v1 import billing, webhook
 from src.core import settings
 
 app = FastAPI(
@@ -28,6 +28,7 @@ async def shutdown():
 
 
 app.include_router(billing.router, prefix='/api/v1/payment', tags=['Billing'])
+app.include_router(webhook.router, prefix='/api/v1/payment/webhook', tags=['Webhook'])
 
 if __name__ == '__main__':
     uvicorn.run(

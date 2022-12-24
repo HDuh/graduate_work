@@ -10,6 +10,8 @@ from src.core.logger import LOGGING
 __all__ = (
     'settings',
     'PaymentState',
+    'SubscriptionStatus',
+    'WebhookEvents',
 )
 
 logging_config.dictConfig(LOGGING)
@@ -64,6 +66,20 @@ class PaymentState(str, Enum):
     PAID = "paid"
     ERROR = "error"
     CANCELED = "canceled"
+
+
+class SubscriptionStatus(str, Enum):
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    CANCELLED = "cancelled"
+
+
+class WebhookEvents(str, Enum):
+    # PAYMENT_CREATED = 'invoice.created'
+    PAYMENT_SUCCESS = 'checkout.session.completed'
+    PAYMENT_REFUND = 'customer.subscription.deleted'
+    # SUBSCRIPTION_UPDATED = 'customer.subscription.updated'
+    # SUBSCRIPTION_DELETED = 'customer.subscription.deleted'
 
 
 @lru_cache(maxsize=128)

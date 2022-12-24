@@ -16,7 +16,6 @@ class Payment(BaseModel):
 
     user_id = Column(UUID(as_uuid=True), nullable=False)
     order_id = Column(UUID(as_uuid=True), nullable=False)
-    payment_id = Column(String(length=128))
     customer_id = Column(String(length=128), nullable=False)
     price_id = Column(String(length=128))
     status = Column(Enum(PaymentState), nullable=False)

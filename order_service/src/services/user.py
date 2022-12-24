@@ -117,7 +117,7 @@ class UserService(BaseDBService):
             return subscription
 
     async def create_subscription(self, user_id, start,
-                                  end, product_id, subscription_id,
+                                  end, product_id, subscription_id, order_id,
                                   status=SubscriptionStatus.ACTIVE):
         subscription_db = Subscription(
             user_id=user_id,
@@ -128,7 +128,7 @@ class UserService(BaseDBService):
 
         if not await self.not_cancelled_subscription(user_id):
             await self.add(subscription_db)
-            StripeManager.add_user_id_to_subscription(subscription_id, user_id)
+            StripeManager.add_to_metadata(subscription_id, user_id, order_id)
 
             logger.info(f'Subscription for user [{user_id}] added to DB.')
             return Create(**subscription_db.to_dict())
