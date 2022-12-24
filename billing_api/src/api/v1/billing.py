@@ -3,15 +3,15 @@ from uuid import UUID
 
 from fastapi import APIRouter, Request, Depends, HTTPException
 from fastapi.templating import Jinja2Templates
+from src.schemas.order_schema import OrderSchema
+from src.services.payment_service import get_payment_service, PaymentService
 from stripe.api_resources.abstract.createable_api_resource import CreateableAPIResource
 
 from src.schemas import PaymentFullSchema, PaymentShortSchema
-from src.schemas.order_schema import OrderSchema
 from src.services.managers import StripeManager
-from src.services.payment_service import get_payment_service, PaymentService
 
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="/app/src/templates")
 
 
 @router.get('/success')

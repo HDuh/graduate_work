@@ -1,21 +1,33 @@
 import logging
 from http import HTTPStatus
-from uuid import uuid4
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.templating import Jinja2Templates
 from starlette.responses import JSONResponse
 
+from src.schemas.order import OrderForBilling
 from src.services import BillingManager, get_billing_manager
 from src.services.order import get_order_service, OrderService
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+templates = Jinja2Templates(directory="/app/src/templates")
+
+
+@router.get('')
+def index(request: Request):
+    return templates.TemplateResponse('index.html', {'request': request})
+
+
+@router.get('/home')
+def index(request: Request):
+    return templates.TemplateResponse('home.html', {'request': request})
 
 
 @router.post('',
              summary='Create order',
              status_code=HTTPStatus.CREATED)
-async def create_order(product_id=uuid4(),
+async def create_order(order_schema: OrderForBilling,
                        # access_token=Depends(security),
                        order_service: OrderService = Depends(get_order_service),
                        billing_manager: BillingManager = Depends(get_billing_manager)) -> JSONResponse:
@@ -31,7 +43,7 @@ async def create_order(product_id=uuid4(),
     #     raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
 
     user_id = 'b20da6d8-9178-4622-8e6a-30572cbaacd4'
-
+    product_id = order_schema.product_id
     result = await order_service.create_order(product_id, user_id)
     if not result:
         raise HTTPException(status_code=HTTPStatus.CONFLICT)
@@ -42,8 +54,7 @@ async def create_order(product_id=uuid4(),
         logger.info(f"Order for user [{user_id}] created successfully! URL {checkout['url']}")
         return JSONResponse(
             status_code=HTTPStatus.CREATED,
-            content={'message': checkout['url']}
-            # content=checkout
+            content={"sessionId": checkout['id'], "checkoutUrl": checkout['url']}
         )
 
     return JSONResponse(

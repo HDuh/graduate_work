@@ -1,8 +1,10 @@
 import logging
+import os
 
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
+from starlette.staticfiles import StaticFiles
 
 from src.api.v1 import order, webhook, product, subscription
 from src.core import settings
@@ -14,8 +16,9 @@ app = FastAPI(
     default_response_class=ORJSONResponse,
 )
 
+this_directory = os.path.dirname(__file__)
+app.mount("/static", StaticFiles(directory=os.path.join(this_directory, "static")), name="static")
 
-# app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.on_event('startup')
 async def startup():

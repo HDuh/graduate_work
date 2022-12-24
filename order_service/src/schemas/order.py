@@ -24,3 +24,7 @@ class OrderCreate(BaseSchema):
     price_id: str
     quantity: int
     service_name: str
+
+
+class OrderForBilling(BaseSchema):
+    product_id: UUID
