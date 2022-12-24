@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 class UserService(BaseDBService):
 
-    async def check_unpaid_user_orders(self, product_id, user_id):
+    async def last_unpaid_user_order(self, product_id, user_id):
         stm = (
             select(Order)
             .join(Order.product)
@@ -26,11 +26,12 @@ class UserService(BaseDBService):
                 Order.user_id == user_id,
                 Order.status == OrderStatus.UNPAID
             )
+            .order_by(desc(Order.created_at))
         )
 
         res = await self.session.execute(stm)
 
-        return res.first()
+        return res.scalars().first()
 
     async def last_paid_user_order(self, product_id, user_id):
         stm = (
@@ -45,19 +46,14 @@ class UserService(BaseDBService):
         )
 
         result = await self.session.execute(stm)
-        result = result.scalars()
-        if result:
-            return result.first()
+        return result.scalars().first()
 
     async def get_by_customer_id(self, customer_id):
         result = await self.session.execute(
             select(self.model)
             .where(self.model.customer_id == customer_id)
         )
-
-        result = result.one_or_none()
-        if result:
-            return result[0]
+        return result.scalar()
 
     async def active_subscription(self, user_id):
         result = await self.session.execute(
@@ -67,52 +63,37 @@ class UserService(BaseDBService):
                 Subscription.status == SubscriptionStatus.ACTIVE
             )
         )
-        result = result.one_or_none()
-
-        if result:
-            return result[0]
-        return
+        return result.scalar()
 
     async def not_cancelled_subscription(self, user_id):
-        stm = (
+        result = await self.session.execute(
             select(Subscription)
             .where(
                 Subscription.status != SubscriptionStatus.CANCELLED,
                 Subscription.user_id == user_id
             )
         )
-        res = await self.session.execute(stm)
-
-        result = res.one_or_none()
-
-        if result:
-            return result[0]
+        return result.scalar()
 
     async def cancel_subscription(self, user_id):
-        subscription = await self.not_cancelled_subscription(user_id)
-
-        if subscription:
-            subscription = subscription.to_dict()
+        if subscription := await self.not_cancelled_subscription(user_id):
             await self.session.execute(
-                update(Subscription)
-                .where(Subscription.id == subscription['id'])
+                update(subscription.__class__)
+                .where(subscription.__class__.id == subscription.id)
                 .values(status=SubscriptionStatus.CANCELLED)
                 .execution_options(synchronize_session="fetch")
             )
-        logger.info(f'Subscription [{subscription["id"]}] canceled.')
+            logger.info(f'Subscription [{subscription.id}] canceled.')
 
     async def update_subscription(self, user_id, status):
-        subscription = await self.active_subscription(user_id)
-
-        if subscription:
-            sub_id = subscription.to_dict()["id"]
-
+        if subscription := await self.active_subscription(user_id):
             await self.session.execute(
-                update(Subscription)
-                .where(Subscription.id == sub_id)
+                update(subscription.__class__)
+                .where(subscription.__class__.id == subscription.id)
                 .values(status=status)
                 .execution_options(synchronize_session="fetch")
             )
+            # await self.session.commit()
             logger.info(f'Subscription [{subscription.id}] updated.')
             return subscription
 
@@ -134,8 +115,9 @@ class UserService(BaseDBService):
             return Create(**subscription_db.to_dict())
 
     async def deactivate_subscription(self, user_id):
-
-        if await self.get_by_id(user_id) and await self.active_subscription(user_id):
+        user = await self.get_by_id(user_id)
+        if user.subscription.filter_by(status=SubscriptionStatus.ACTIVE):
+            # if await self.get_by_id(user_id) and await self.active_subscription(user_id):
             StripeManager.deactivate_subscription(user_id)
 
             result = await self.update_subscription(user_id, SubscriptionStatus.INACTIVE)

@@ -1,5 +1,6 @@
 import logging
 from functools import lru_cache
+from uuid import uuid4
 
 from fastapi import Depends
 from sqlalchemy import select, update
@@ -29,7 +30,7 @@ class OrderService(BaseDBService):
             user = User(id=user_id, customer_id=customer['id'])
             await self.add(user)
 
-        check_orders = await self.user_service.check_unpaid_user_orders(product_id, user_id)
+        check_orders = await self.user_service.last_unpaid_user_order(product_id, user_id)
         check_subscriptions = await self.user_service.not_cancelled_subscription(user_id)
 
         if check_orders:

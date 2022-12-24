@@ -47,7 +47,6 @@ class WebhookService:
             order = await self.user_service.last_paid_user_order(product.id, user.id)
             start_date = datetime.utcfromtimestamp(event_obj['current_period_start'])
             end_date = datetime.utcfromtimestamp(event_obj['current_period_end'])
-            print('ORDER!!!', order)
             subscription = await self.user_service.create_subscription(
                 user_id=user.id,
                 start=start_date,

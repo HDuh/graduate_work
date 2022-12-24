@@ -24,7 +24,7 @@ class StripeManager:
             payment_method_types=['card'],
         )
 
-        logger.info(f'Payment intent [{pay_intent["id"]}] created.')
+        logger.info(f'Payment intent [{pay_intent.stripe_id}] created.')
         return pay_intent
 
     @classmethod
@@ -39,8 +39,8 @@ class StripeManager:
             ],
             customer=order.customer_id,
             mode='subscription',
-            success_url='http://billing_api:8001/api/v1/payment/success?session_id={CHECKOUT_SESSION_ID}',
-            cancel_url='http://billing_api:8001/api/v1/payment/cancel',
+            success_url='http://localhost/api/v1/billing/success?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url='http://localhost/api/v1/billing/cancel',
             metadata={
                 'order_id': order.order_id,
             }
