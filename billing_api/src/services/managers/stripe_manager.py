@@ -24,7 +24,7 @@ class StripeManager:
             payment_method_types=['card'],
         )
 
-        logger.info(f'Payment intent [{pay_intent["id"]}] created.')
+        logger.info(f'Payment intent [{pay_intent.stripe_id}] created.')
         return pay_intent
 
     @classmethod

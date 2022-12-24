@@ -25,7 +25,7 @@ async def cancel(request: Request):
 
 
 @router.post('/checkout')
-async def create_checkout_session(
+async def checkout(
         order_schema: OrderSchema,
         payment_service: PaymentService = Depends(get_payment_service)
 ) -> CreateableAPIResource:

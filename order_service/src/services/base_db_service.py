@@ -15,12 +15,7 @@ class BaseDBService:
             select(self.model)
             .where(self.model.id == idx)
         )
-        result = result.one_or_none()
-
-        if result:
-            return result[0]
-
-        return
+        return result.scalar()
 
     async def get_all(self):
         result = await self.session.execute(

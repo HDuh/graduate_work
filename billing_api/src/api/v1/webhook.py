@@ -27,18 +27,15 @@ async def webhook(
     event = stripe.Event.construct_from(json_data, stripe.api_key)
     message = 'not happened'
     if event.type in (WebhookEvents.PAYMENT_SUCCESS.value, WebhookEvents.PAYMENT_REFUND.value):
-        status = (PaymentState.PAID
-                  if event.type == WebhookEvents.PAYMENT_SUCCESS.value
-                  else PaymentState.CANCELED
-                  )
+        status = (
+            PaymentState.PAID
+            if event.type == WebhookEvents.PAYMENT_SUCCESS.value
+            else PaymentState.CANCELED
+        )
         message = await payment_service.async_payment_update(
             status,
             customer_id=event.data.object.customer,
             order_id=event.data.object.metadata.get('order_id'),
         )
-
-    else:
-        print('ANOTHER TYPE')
-        print(event.type)
 
     return {'status': message}

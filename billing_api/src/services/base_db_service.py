@@ -28,7 +28,9 @@ class BaseDBService:
 
     async def save(self, model_instance):
         self.session.add(model_instance)
+        await self.session.commit()
 
     async def check_and_delete(self, **kwargs):
         if result := await self.get_by_id(**kwargs):
             await self.session.delete(result)
+            await self.session.commit()
