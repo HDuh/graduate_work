@@ -1,15 +1,14 @@
 import logging
 from functools import lru_cache
-from uuid import uuid4
 
 from fastapi import Depends
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.schemas.order import OrderCreate
 
 from src.core import OrderStatus
 from src.db.base import get_session
 from src.db.models import User, Order, Product
+from src.schemas.order import OrderCreate
 from src.services import StripeManager
 from .base_db_service import BaseDBService
 from .product import ProductService, get_product_service
@@ -42,6 +41,10 @@ class OrderService(BaseDBService):
             return
 
         product = await self.product_service.get_by_id(product_id)
+
+        if not product:
+            return
+
         new_order = Order(
             user_id=user.id,
             status=OrderStatus.UNPAID,
