@@ -7,12 +7,12 @@
 
 
 ### Схема проекта:
-![img.png](project_schema.png)
-![img_1.png](project_schema_graduade_work.png)
+![](project_schema.png)
+![](project_schema_graduade_work.png)
 
 ### Схема БД:
-![img.png](database_schema.png)
 
+![](database_schema.png)
 ### Пайплайн:
 * Наполнить таблицу **Product**.
 * Пользователь на frontend выбирает товар (подписку) для покупки и 
@@ -27,4 +27,4 @@
 * После процесса оплаты в работу включаются webhook'и. Которые в зависимости от события, обновляют информацию о заказе и оплате в БД.
 
 ### Схема взаимодействия сервисов:
-![img.png](pipeline_schema.png)
+![](pipeline_schema.png)
