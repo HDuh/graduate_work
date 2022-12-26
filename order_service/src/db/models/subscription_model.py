@@ -21,7 +21,4 @@ class Subscription(BaseModel):
     end_date = Column(DateTime(timezone=True), nullable=False)
     product_id = Column(UUID(as_uuid=True), ForeignKey('product.id'), nullable=False)
 
-    user = relationship("User", back_populates="subscription", lazy='subquery')
-
-    def __str__(self):
-        return self.name
+    user = relationship("User", back_populates="subscription")
