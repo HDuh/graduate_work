@@ -8,7 +8,6 @@ Create Date: 2022-12-24 14:49:55.340580
 import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects import postgresql
-
 # revision identifiers, used by Alembic.
 revision = '4ba69b5fb2c0'
 down_revision = None
@@ -64,6 +63,12 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['product_id'], ['product.id'], ondelete='CASCADE')
     )
     # ### end Alembic commands ###
+
+    op.execute("INSERT INTO product(id, name, product_type, product_stripe_id, "
+               "price_stripe_id, description,duration,price,currency_code,recurring,is_active) VALUES "
+               "('25b3c1fc-383a-4575-95dc-1542c60b9db6', 'Monthly', 'Subscription', 'prod_N2lNvWXDuh6USH', 'price_1MIfqjInWuMfFLjmfv7lC74G','Monthly sub for service', 1, 100,'rub', True, True),"
+               "('8120c1e7-e8ee-495d-b3fe-8f2f10f661a5', 'Quarter', 'Subscription', 'prod_N2lOQj2k9b3otT', 'price_1MIfrHInWuMfFLjmyTsmoLdP','Quarter sub for service', 3, 240,'rub', True, True),"
+               "('68b0cc8a-debf-425c-8d33-5ed009cde428', 'Half year', 'Subscription', 'prod_N2lOlVFiUm3WKY', 'price_1MIfrcInWuMfFLjmyEmxJY3N','Half year sub for service', 6, 360,'rub', True, True)")
 
 
 def downgrade() -> None:
