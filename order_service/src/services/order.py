@@ -26,17 +26,14 @@ class OrderService(BaseDBService):
     async def create_order(self, product_id, user_id):
         if not (user := await self.user_service.get_by_id(user_id)):
             customer = StripeManager.create_customer()
-            user = User(id=user_id, customer_id=customer['id'])
+            user = User(id=user_id, customer_id=customer.stripe_id)
             await self.add(user)
 
-        check_orders = await self.user_service.last_unpaid_user_order(product_id, user_id)
-        check_subscriptions = await self.user_service.not_cancelled_subscription(user_id)
-
-        if check_orders:
+        if await self.user_service.last_unpaid_user_order(product_id, user_id):  # check_orders
             logger.warning('User [%s] has UNPAID order.', user_id)
             return
 
-        if check_subscriptions:
+        if await self.user_service.not_cancelled_subscription(user_id):  # check_subscriptions
             logger.warning('User [%s] already has subscription.', user_id)
             return
 
@@ -93,6 +90,7 @@ class OrderService(BaseDBService):
         # Cancel subscription to stripe
         StripeManager.cancel_subscription(user_id)
         await self.update_order(user_id, status=OrderStatus.CANCELED)
+
         logger.info(f'Refund. amount [%d], user [%s], product [%s]', product.price, user_id, product.name)
         return {'amount': product.price, 'user_id': user_id, 'product': product.name}
 

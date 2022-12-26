@@ -1,7 +1,7 @@
 import datetime
 from uuid import UUID
 
-from src.schemas.base import BaseMixin
+from .base_schema_mixin import BaseMixin
 
 
 class DeactivateSubscription(BaseMixin):

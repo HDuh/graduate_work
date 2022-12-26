@@ -1,13 +1,12 @@
-import logging
 from datetime import datetime
 from functools import lru_cache
 
 from fastapi import Depends
+
+from src.core import SubscriptionStatus
 from src.services.order import OrderService, get_order_service
 from src.services.product import ProductService, get_product_service
 from src.services.user import UserService, get_user_service
-
-from src.core import SubscriptionStatus
 
 
 class WebhookService:

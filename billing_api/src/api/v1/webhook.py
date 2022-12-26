@@ -1,5 +1,3 @@
-import logging
-
 import stripe
 from fastapi import APIRouter, Request, Depends
 

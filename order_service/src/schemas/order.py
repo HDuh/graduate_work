@@ -2,7 +2,7 @@ from uuid import UUID
 
 from pydantic import Field
 
-from src.schemas.base import BaseMixin
+from .base_schema_mixin import BaseMixin
 
 
 class RefundCreate(BaseMixin):

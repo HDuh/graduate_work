@@ -3,7 +3,7 @@ from enum import Enum
 from functools import lru_cache
 from logging import config as logging_config
 
-from pydantic import BaseSettings, Field
+from pydantic import BaseSettings
 
 from .logger import LOGGING
 

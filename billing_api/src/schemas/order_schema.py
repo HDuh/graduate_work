@@ -1,13 +1,13 @@
 from uuid import UUID
 
-from pydantic import BaseModel
+from .base_schema_mixin import BaseMixin
 
 __all__ = (
     'OrderSchema',
 )
 
 
-class OrderSchema(BaseModel):
+class OrderSchema(BaseMixin):
     user_id: UUID
     order_id: UUID
     customer_id: str
@@ -21,6 +21,3 @@ class OrderSchema(BaseModel):
             for attr, value in self.__dict__.items()
             if attr != 'quantity'
         }
-
-    class Config:
-        orm_mode = True
