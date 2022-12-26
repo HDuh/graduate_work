@@ -1,9 +1,9 @@
 from uuid import UUID
 
-from src.schemas.base import BaseSchema
+from src.schemas.base import BaseMixin
 
 
-class ProductCreate(BaseSchema):
+class ProductCreate(BaseMixin):
     name: str
     product_type: str
     description: str
@@ -12,7 +12,7 @@ class ProductCreate(BaseSchema):
     recurring: bool
 
 
-class ProductList(BaseSchema):
+class ProductList(BaseMixin):
     id: UUID
     name: str
     price: int
@@ -20,7 +20,7 @@ class ProductList(BaseSchema):
     duration: int
 
 
-class ProductDetail(BaseSchema):
+class ProductDetail(BaseMixin):
     id: UUID
     name: str
     description: str

@@ -21,3 +21,6 @@ class OrderSchema(BaseModel):
             for attr, value in self.__dict__.items()
             if attr != 'quantity'
         }
+
+    class Config:
+        orm_mode = True

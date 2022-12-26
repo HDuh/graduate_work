@@ -17,6 +17,9 @@ class PaymentShortSchema(BaseModel):
     service_name: str
     created_at: datetime
 
+    class Config:
+        orm_mode = True
+
 
 class PaymentFullSchema(BaseModel):
     id: UUID
@@ -28,3 +31,6 @@ class PaymentFullSchema(BaseModel):
     service_name: str
     created_at: datetime
     updated_at: datetime
+
+    class Config:
+        orm_mode = True

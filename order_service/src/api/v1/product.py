@@ -27,8 +27,7 @@ async def get_all_products(
         - _duration_
     """
     all_products = await product_service.get_all()
-
-    return [ProductList(**product.to_dict()) for product in all_products]
+    return [ProductList.from_orm(product) for product in all_products]
 
 
 @router.post("",
@@ -45,11 +44,11 @@ async def create_product(
 
     """
     result = await product_service.create_product(**product_schema.dict())
-    result = result.to_dict()
+    # result = result.to_dict()
 
-    logger.info(f'Product [ {result["name"]} ] with price [ {result["price"]} ]  successfully created. ')
-    result = ProductCreate(**result)
-    return result
+    logger.info(f'Product [ {result.name} ] with price [ {result.price} ]  successfully created. ')
+    # result = ProductCreate(**result)
+    return ProductCreate.from_orm(result)
 
 
 @router.get("/{product_id}",
@@ -77,7 +76,7 @@ async def get_product_details(
     if not product:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
 
-    return ProductDetail(**product.to_dict())
+    return ProductDetail.from_orm(product)
 
 
 @router.delete("/{product_id}",

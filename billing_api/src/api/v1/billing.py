@@ -61,7 +61,7 @@ async def get_all_payment_info(
         _created_at_
     """
     all_payments = await payment_service.get_all()
-    return [PaymentShortSchema(**payment.__dict__) for payment in all_payments]
+    return [PaymentShortSchema.from_orm(payment) for payment in all_payments]
 
 
 @router.get(
@@ -95,7 +95,7 @@ async def full_info_by_user(
             status_code=HTTPStatus.NOT_FOUND,
             detail=f'User {user_id} not found'
         )
-    return [PaymentFullSchema(**payment.__dict__) for payment in user_payments]
+    return [PaymentFullSchema.from_orm(payment) for payment in user_payments]
 
 
 @router.get(
@@ -129,4 +129,4 @@ async def full_info_by_order(
             status_code=HTTPStatus.NOT_FOUND,
             detail=f'Order {order_id} not found'
         )
-    return PaymentFullSchema(**payment.__dict__)
+    return PaymentFullSchema.from_orm(payment)
