@@ -35,8 +35,8 @@ class PostgresConfig(BaseSettings):
     """
     Конфигурация PostgreSQL.
     """
-    database_uri: str = Field(..., env='SQLALCHEMY_DATABASE_URI')
-    db_echo_log: bool = Field(..., env='SQLALCHEMY_DB_ECHO_LOG')
+    database_uri: str
+    db_echo_log: bool
 
     class Config:
         env_prefix = 'sqlalchemy_'
