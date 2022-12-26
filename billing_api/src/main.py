@@ -35,5 +35,5 @@ if __name__ == '__main__':
         reload=True,
         port=8001,
         log_config=settings.app.logging,
-        log_level=logging.DEBUG,
+        log_level=settings.app.log_level,
     )

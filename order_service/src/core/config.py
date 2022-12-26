@@ -15,7 +15,6 @@ __all__ = (
 )
 
 logging_config.dictConfig(LOGGING)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__name__)))
 
 
 class AppConfig(BaseSettings):
@@ -23,12 +22,12 @@ class AppConfig(BaseSettings):
     Конфигурация приложения.
     """
     base_dir: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    project_name: str = '...'
+    project_name: str
     logging = LOGGING
+    log_level: str
 
     class Config:
         env_prefix = 'glob_'
-        env_file = os.path.join(BASE_DIR, '.env')
         case_sensitive = False
 
 
@@ -41,7 +40,6 @@ class PostgresConfig(BaseSettings):
 
     class Config:
         env_prefix = 'sqlalchemy_'
-        # env_file = os.path.join(BASE_DIR, '.env')
         case_sensitive = False
 
 

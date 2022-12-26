@@ -43,8 +43,7 @@ async def create_order(order_schema: OrderForBilling,
     #     raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
 
     user_id = 'b20da6d8-9178-4622-8e6a-30572cbaacd4'
-    product_id = order_schema.product_id
-    result = await order_service.create_order(product_id, user_id)
+    result = await order_service.create_order(order_schema.product_id, user_id)
     if not result:
         raise HTTPException(status_code=HTTPStatus.CONFLICT)
 
