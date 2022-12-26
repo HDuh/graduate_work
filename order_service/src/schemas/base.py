@@ -7,17 +7,11 @@ def orjson_dumps(v, *, default):
     return orjson.dumps(v, default=default).decode()
 
 
-class BaseOrjsonModel(BaseModel):
+class BaseMixin(BaseModel):
+    class Config:
+        orm_mode = True
+
     class Meta:
         # Replace default lib for json to faster orjson
         json_loads = orjson.loads
         json_dumps = orjson_dumps
-
-
-class BaseSchema(BaseOrjsonModel):
-    ...
-
-#
-# class ListQuery(BaseOrjsonModel):
-#     offset: int
-#     limit: int

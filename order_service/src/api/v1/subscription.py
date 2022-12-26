@@ -43,7 +43,7 @@ async def refund(
         if not result:
             raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
         logger.info(f'User [ {refund_schema.user_id} ] SUCCESSFULLY refund money for product [ {refund_schema.product_id} ]')
-        return RefundComplete(**result)
+        return RefundComplete.from_orm(result)
 
     except InvalidRequestError as _ex:
         return JSONResponse(
@@ -83,4 +83,4 @@ async def deactivate_subscription(
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
     logger.info(f'User [ {subscription_schema.user_id} ] deactivate subscription.')
 
-    return DeactivateComplete(**result.to_dict())
+    return DeactivateComplete.from_orm(result)

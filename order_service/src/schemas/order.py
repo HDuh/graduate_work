@@ -2,21 +2,21 @@ from uuid import UUID
 
 from pydantic import Field
 
-from src.schemas.base import BaseSchema
+from src.schemas.base import BaseMixin
 
 
-class RefundCreate(BaseSchema):
+class RefundCreate(BaseMixin):
     user_id: UUID
     product_id: UUID
 
 
-class RefundComplete(BaseSchema):
+class RefundComplete(BaseMixin):
     user_id: UUID
     amount: int
     product: str
 
 
-class OrderCreate(BaseSchema):
+class OrderCreate(BaseMixin):
     user_id: UUID
     order_id: UUID
     payment_id: str = Field(default='')
@@ -26,5 +26,5 @@ class OrderCreate(BaseSchema):
     service_name: str
 
 
-class OrderForBilling(BaseSchema):
+class OrderForBilling(BaseMixin):
     product_id: UUID
