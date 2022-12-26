@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core import OrderStatus
 from src.db.base import get_session
-from src.db.models import User, Order, Product
+from src.db.models import User, Order
 from src.schemas.order import OrderCreate
 from src.services import StripeManager
 from .base_db_service import BaseDBService
@@ -33,16 +33,14 @@ class OrderService(BaseDBService):
         check_subscriptions = await self.user_service.not_cancelled_subscription(user_id)
 
         if check_orders:
-            logger.warning(f'User [{user_id}] has UNPAID order.')
+            logger.warning('User [%s] has UNPAID order.', user_id)
             return
 
         if check_subscriptions:
-            logger.warning(f'User [{user_id}] already has subscription.')
+            logger.warning('User [%s] already has subscription.', user_id)
             return
 
-        product = await self.product_service.get_by_id(product_id)
-
-        if not product:
+        if not (product := await self.product_service.get_by_id(product_id)):
             return
 
         new_order = Order(
@@ -73,44 +71,30 @@ class OrderService(BaseDBService):
                 Order.user_id == user_id,
                 Order.status == status_to_search)
         )
-        order_obj = result.scalars().first().to_dict()
-
-        if not pay_intent_id:
-            pay_intent_id = order_obj['pay_intent_id']
-
-        order_id_for_update = order_obj['id']
+        order = result.scalars().first()
+        pay_intent_id = order.pay_intent_id if not pay_intent_id else pay_intent_id
 
         await self.session.execute(
             update(Order)
-            .where(Order.id == order_id_for_update)
+            .where(Order.id == order.id)
             .values(status=status, pay_intent_id=pay_intent_id)
             .execution_options(synchronize_session="fetch")
         )
         await self.session.commit()
+        logger.info(f'Order [%s] was updated. Status [%s]', order.id, status)
 
-        logger.info(f'Order [{order_id_for_update}] was updated. Status [{status}]')
-
-    async def create_refund(self, user_id, product_id):
-
-        order: Order = await self.user_service.last_paid_user_order(product_id, user_id)
-        if not order:
+    async def create_refund(self, user_id, product_id) -> dict | None:
+        if not (order := await self.user_service.last_paid_user_order(product_id, user_id)):
             return
-        product: Product = await self.product_service.get_by_id(product_id)
-
-        amount = product.price
-        pay_intent_id = order.pay_intent_id
+        product = await self.product_service.get_by_id(product_id)
 
         # Refund to stripe
-        StripeManager.refund(amount, pay_intent_id, order.id)
-
+        StripeManager.refund(product.price, order.pay_intent_id, order.id)
         # Cancel subscription to stripe
         StripeManager.cancel_subscription(user_id)
-
         await self.update_order(user_id, status=OrderStatus.CANCELED)
-
-        amount = amount
-        logger.info(f'Refund. amount [{amount}], user [{user_id}], product [{product.name}]')
-        return {'amount': amount, 'user_id': user_id, 'product': product.name}
+        logger.info(f'Refund. amount [%d], user [%s], product [%s]', product.price, user_id, product.name)
+        return {'amount': product.price, 'user_id': user_id, 'product': product.name}
 
     async def set_payment_id(self, order_id, **kwargs):
         await self.session.execute(

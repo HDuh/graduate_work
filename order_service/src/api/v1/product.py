@@ -3,6 +3,7 @@ from http import HTTPStatus
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
+from starlette.responses import JSONResponse
 
 from src.schemas.product import ProductList, ProductCreate, ProductDetail
 from src.services.product import ProductService, get_product_service
@@ -45,7 +46,7 @@ async def create_product(
     """
     result = await product_service.create_product(**product_schema.dict())
 
-    logger.info(f'Product [ {result.name} ] with price [ {result.price} ]  successfully created. ')
+    logger.info('Product [%s] with price [%s] successfully created.', result.name, result.price)
     return ProductCreate.from_orm(result)
 
 
@@ -83,7 +84,7 @@ async def get_product_details(
 async def delete_product(
         product_id: UUID,
         product_service: ProductService = Depends(get_product_service)
-) -> dict:
+) -> JSONResponse:
     """
      ## Delete Product
         Delete from DB and send info to Stripe
@@ -93,6 +94,9 @@ async def delete_product(
 
     if not result:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
-    logger.info(f'Product [ {product_id} ] was deleted')
+    logger.info('Product [%s] was deleted', product_id)
 
-    return {'result': f'{product_id} was deleted'}
+    return JSONResponse(
+        status_code=HTTPStatus.OK,
+        content={'message': f'{product_id} was deleted'}
+    )

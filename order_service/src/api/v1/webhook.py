@@ -24,26 +24,21 @@ async def webhook(
     """
     json_data = await request.json()
     event = stripe.Event.construct_from(json_data, stripe.api_key)
-    event_type = event['type']
     message = 'not happened'
 
-    if event_type == 'payment_intent.succeeded':
-        logger.info(event_type)
-        payment_intent_obj = event['data']['object']
-        message = await webhook_service.update_order(payment_intent_obj)
+    if event.type == 'payment_intent.succeeded':
+        logger.info(event.type)
+        message = await webhook_service.update_order(event.data.object)
 
-    elif event_type == 'customer.subscription.updated':
-        logger.info(event_type)
-        subscription_event = event['data']['object']
-        message = await webhook_service.subscription_updated(subscription_event)
+    elif event.type == 'customer.subscription.updated':
+        logger.info(event.type)
+        message = await webhook_service.subscription_updated(event.data.object)
 
-    if event_type == 'customer.subscription.deleted':
-        logger.info(event_type)
-        subscription_event = event['data']['object']
-        message = await webhook_service.subscription_deleted(subscription_event)
+    if event.type == 'customer.subscription.deleted':
+        logger.info(event.type)
+        message = await webhook_service.subscription_deleted(event.data.object)
 
     else:
-        logger.info('ANOTHER TYPE')
-        logger.info(event.type)
+        logger.info('ANOTHER TYPE -> %s', event.type)
 
     return {'status': message}

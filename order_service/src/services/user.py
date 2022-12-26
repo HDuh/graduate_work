@@ -99,7 +99,7 @@ class UserService(BaseDBService):
                 .values(status=SubscriptionStatus.CANCELLED)
                 .execution_options(synchronize_session="fetch")
             )
-            logger.info(f'Subscription [{subscription.id}] canceled.')
+            logger.info(f'Subscription [%s] canceled.', subscription.id)
 
     async def update_subscription(self, user_id, status):
         if subscription := await self.active_subscription(user_id):
@@ -109,7 +109,7 @@ class UserService(BaseDBService):
                 .values(status=status)
                 .execution_options(synchronize_session="fetch")
             )
-            logger.info(f'Subscription [{subscription.id}] updated.')
+            logger.info(f'Subscription [%s] updated.', subscription.id)
             return subscription
 
     async def create_subscription(self, user_id, start,
@@ -124,13 +124,11 @@ class UserService(BaseDBService):
 
         if not await self.not_cancelled_subscription(user_id):
             order = await self.last_user_order(product_id, user_id)
-
-            order_id = order.id
             await self.add(subscription_db)
-            StripeManager.add_to_metadata(subscription_id, user_id, order_id)
+            StripeManager.add_to_metadata(subscription_id, user_id, order.id)
 
-            logger.info(f'Subscription for user [{user_id}] added to DB.')
-            return Create(**subscription_db.to_dict())
+            logger.info(f'Subscription for user [%s] added to DB.', user_id)
+            return Create.from_orm(subscription_db)
 
     async def deactivate_subscription(self, user_id):
         user = await self.get_by_id(user_id)
@@ -138,7 +136,7 @@ class UserService(BaseDBService):
             StripeManager.deactivate_subscription(user_id)
 
             result = await self.update_subscription(user_id, SubscriptionStatus.INACTIVE)
-            logger.info(f'Subscription for user [{user_id}] deactivated. ')
+            logger.info(f'Subscription for user [%s] deactivated.', user_id)
             return result
 
 

@@ -9,8 +9,6 @@ from src.services.user import UserService, get_user_service
 
 from src.core import SubscriptionStatus
 
-logger = logging.getLogger(__name__)
-
 
 class WebhookService:
     def __init__(self,

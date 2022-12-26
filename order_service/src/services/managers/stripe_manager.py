@@ -17,7 +17,7 @@ class StripeManager:
     def create_customer(cls):
         customer = stripe.Customer.create()
 
-        logger.info(f'Customer [{customer["id"]}] created.')
+        logger.info('Customer [%s] created.', customer.stripe_id)
         return customer
 
     @classmethod
@@ -28,7 +28,7 @@ class StripeManager:
             payment_method_types=['card'],
         )
 
-        logger.info(f'Payment intent [{pay_intent["id"]}] created.')
+        logger.info('Payment intent [%s] created.', pay_intent.stripe_id)
         return pay_intent
 
     @classmethod
@@ -38,7 +38,7 @@ class StripeManager:
             description=description,
         )
 
-        logger.info(f'Product [{product["id"]}] created.')
+        logger.info('Product [%s] created.', product.stripe_id)
         return product
 
     @classmethod
@@ -59,7 +59,7 @@ class StripeManager:
             product_instance.product_stripe_id,
             active=False
         )
-        logger.info(f'Product [{product["id"]}] archived.')
+        logger.info('Product [%s] archived.', product.stripe_id)
         return product
 
     @classmethod
@@ -71,38 +71,31 @@ class StripeManager:
                 "order_id": order_id,
             },
         )
-        logger.info(f'User id [{user_id}] added to subscription [{subscription_id}] .')
-        logger.info(f'Order id [{order_id}] added to subscription [{subscription_id}] .')
+        logger.info('User id [%s] added to subscription [%s]', user_id, subscription_id)
+        logger.info('Order id [%s] added to subscription [%s]', order_id, subscription_id)
         return result
 
     @classmethod
     def cancel_subscription(cls, user_id):
-        subscription_query = stripe.Subscription.search(
+        subscription = stripe.Subscription.search(
             query=f"status:'active' AND metadata['user_id']:'{user_id}'",
         )
-        subscription_obj = subscription_query['data'][0]
-        subscription_id = subscription_obj['id']
-
         result = stripe.Subscription.delete(
-            subscription_id,
+            subscription.data[0].stripe_id,
         )
-        logger.info(f'Subscription cancelled for user [{user_id}].')
+        logger.info('Subscription cancelled for user [%s].', user_id)
         return result
 
     @classmethod
     def deactivate_subscription(cls, user_id):
-        subscription_query = stripe.Subscription.search(
-            query=f"status:'active' AND metadata['user_id']:'{user_id}'",
-        )
-        if subscription_query:
-            subscription_obj = subscription_query['data'][0]
-            subscription_id = subscription_obj['id']
-
+        if subscription := stripe.Subscription.search(
+                query=f"status:'active' AND metadata['user_id']:'{user_id}'",
+        ):
             result = stripe.Subscription.modify(
-                subscription_id,
+                subscription.data[0].stripe_id,
                 cancel_at_period_end=True)
 
-            logger.info(f'Subscription deactivated for user [{user_id}].')
+            logger.info('Subscription deactivated for user [%s].', user_id)
             return result
 
     @classmethod
@@ -114,5 +107,5 @@ class StripeManager:
                 'order_id': order_id,
             }
         )
-        logger.info(f'Refund for payment intent [{pay_intent_id}].')
+        logger.info('Refund for payment intent [%s].', pay_intent_id)
         return refund

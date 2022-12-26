@@ -7,7 +7,6 @@ from src.core import WebhookEvents, PaymentState
 from src.services.payment_service import PaymentService, get_payment_service
 
 router = APIRouter()
-logger = logging.getLogger(__name__)
 
 
 @router.post(

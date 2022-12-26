@@ -37,13 +37,21 @@ async def refund(
 
      """
     try:
-        logger.info(f'User [ {refund_schema.user_id} ] trying refund money for product [ {refund_schema.product_id} ]')
+        logger.info(
+            f'User [%s] trying refund money for product [%s]',
+            refund_schema.user_id,
+            refund_schema.product_id
+        )
         result = await order_service.create_refund(**refund_schema.dict())
 
         if not result:
             raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
-        logger.info(f'User [ {refund_schema.user_id} ] SUCCESSFULLY refund money for product [ {refund_schema.product_id} ]')
-        return RefundComplete.from_orm(result)
+        logger.info(
+            f'User [%s] SUCCESSFULLY refund money for product [%s]',
+            refund_schema.user_id,
+            refund_schema.product_id
+        )
+        return RefundComplete(**result)
 
     except InvalidRequestError as _ex:
         return JSONResponse(
@@ -81,6 +89,6 @@ async def deactivate_subscription(
 
     if not result:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
-    logger.info(f'User [ {subscription_schema.user_id} ] deactivate subscription.')
+    logger.info(f'User [%s] deactivate subscription.', subscription_schema.user_id)
 
     return DeactivateComplete.from_orm(result)
