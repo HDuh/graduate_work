@@ -44,10 +44,8 @@ async def create_product(
 
     """
     result = await product_service.create_product(**product_schema.dict())
-    # result = result.to_dict()
 
     logger.info(f'Product [ {result.name} ] with price [ {result.price} ]  successfully created. ')
-    # result = ProductCreate(**result)
     return ProductCreate.from_orm(result)
 
 

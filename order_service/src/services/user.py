@@ -109,7 +109,6 @@ class UserService(BaseDBService):
                 .values(status=status)
                 .execution_options(synchronize_session="fetch")
             )
-            # await self.session.commit()
             logger.info(f'Subscription [{subscription.id}] updated.')
             return subscription
 
@@ -136,7 +135,6 @@ class UserService(BaseDBService):
     async def deactivate_subscription(self, user_id):
         user = await self.get_by_id(user_id)
         if user.subscription.filter_by(status=SubscriptionStatus.ACTIVE):
-            # if await self.get_by_id(user_id) and await self.active_subscription(user_id):
             StripeManager.deactivate_subscription(user_id)
 
             result = await self.update_subscription(user_id, SubscriptionStatus.INACTIVE)
