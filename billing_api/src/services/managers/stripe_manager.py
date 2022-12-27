@@ -24,7 +24,7 @@ class StripeManager:
             payment_method_types=['card'],
         )
 
-        logger.info(f'Payment intent [{pay_intent.stripe_id}] created.')
+        logger.info(f'Payment intent [%s] created.', pay_intent.stripe_id)
         return pay_intent
 
     @classmethod
@@ -45,5 +45,5 @@ class StripeManager:
                 'order_id': order.order_id,
             }
         )
-        logger.info(f'Checkout session created.')
+        logger.info(f'Checkout session [%s] created.', checkout_session.stripe_id)
         return checkout_session

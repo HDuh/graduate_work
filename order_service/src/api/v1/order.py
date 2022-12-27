@@ -52,7 +52,7 @@ async def create_order(order_schema: OrderForBilling,
     response, checkout = await billing_manager.async_checkout(result)
 
     if response.status == HTTPStatus.OK:
-        logger.info(f"Order for user [{user_id}] created successfully! URL {checkout['url']}")
+        logger.info(f"Order for user [%s] created successfully! URL %s", user_id, checkout['url'])
         return JSONResponse(
             status_code=HTTPStatus.CREATED,
             content={"sessionId": checkout['id'], "checkoutUrl": checkout['url']}

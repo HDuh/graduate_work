@@ -38,7 +38,6 @@ class PaymentService(BaseDBService):
             )
         )
         await self.session.commit()
-        print(f'Successfully updated. Order: {kwargs.get("order_id")}')
         return f'Successfully updated. Order: {kwargs.get("order_id")}'
 
 

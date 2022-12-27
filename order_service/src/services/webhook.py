@@ -1,15 +1,12 @@
-import logging
 from datetime import datetime
 from functools import lru_cache
 
 from fastapi import Depends
+
+from src.core import SubscriptionStatus
 from src.services.order import OrderService, get_order_service
 from src.services.product import ProductService, get_product_service
 from src.services.user import UserService, get_user_service
-
-from src.core import SubscriptionStatus
-
-logger = logging.getLogger(__name__)
 
 
 class WebhookService:
@@ -22,52 +19,36 @@ class WebhookService:
         self.user_service = user_service
 
     async def update_order(self, event_obj):
-        customer_id = event_obj['customer']
-        user = await self.user_service.get_by_customer_id(customer_id)
+        user = await self.user_service.get_by_customer_id(event_obj.customer)
 
-        status = event_obj['status']
-        if status == 'succeeded':
-            new_pay_intent_id = event_obj['id']
-            updated_order = await self.order_service.update_order(user.id, new_pay_intent_id)
-
-            if updated_order:
+        if event_obj.status == 'succeeded':
+            if updated_order := await self.order_service.update_order(user.id, event_obj.stripe_id):
                 return f'Order was update: {updated_order.to_dict()}'
 
     async def subscription_updated(self, event_obj):
-        customer_id = event_obj['customer']
-        subscription_id = event_obj['id']
+        user = await self.user_service.get_by_customer_id(event_obj.customer)
 
-        product_stripe_id = event_obj['plan']['product']
-        canceled_at = event_obj['canceled_at']
+        if not event_obj.canceled_at:
+            product = await self.product_service.get_product_by_product_stripe_id(event_obj.plan.product)
 
-        user = await self.user_service.get_by_customer_id(customer_id)
-
-        if not canceled_at:
-            product = await self.product_service.get_product_by_product_stripe_id(product_stripe_id)
-
-            start_date = datetime.utcfromtimestamp(event_obj['current_period_start'])
-            end_date = datetime.utcfromtimestamp(event_obj['current_period_end'])
             subscription = await self.user_service.create_subscription(
                 user_id=user.id,
-                start=start_date,
-                end=end_date,
+                start=datetime.utcfromtimestamp(event_obj.current_period_start),
+                end=datetime.utcfromtimestamp(event_obj.current_period_end),
                 product_id=product.id,
-                subscription_id=subscription_id,
+                subscription_id=event_obj.stripe_id,
             )
             return f'Subscription create: {subscription}'
 
-        else:
-            subscription = await self.user_service.update_subscription(
-                user_id=user.id,
-                status=SubscriptionStatus.INACTIVE)
+        subscription = await self.user_service.update_subscription(
+            user_id=user.id,
+            status=SubscriptionStatus.INACTIVE)
 
-            return f'Subscription updated: {subscription}'
+        return f'Subscription updated: {subscription}'
 
     async def subscription_deleted(self, event_obj):
-        customer_id = event_obj['customer']
-        if user := await self.user_service.get_by_customer_id(customer_id):
+        if user := await self.user_service.get_by_customer_id(event_obj.customer):
             await self.user_service.cancel_subscription(user.id)
-
             return f'Subscription for user [{user.id}] was canceled'
 
 

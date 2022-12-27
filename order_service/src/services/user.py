@@ -4,11 +4,11 @@ from functools import lru_cache
 from fastapi import Depends
 from sqlalchemy import select, update, desc
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.schemas.subscriptions import Create
 
 from src.core import OrderStatus, SubscriptionStatus
 from src.db.base import get_session
 from src.db.models import Product, User, Order, Subscription
+from src.schemas.subscriptions import Create
 from src.services import StripeManager
 from .base_db_service import BaseDBService
 
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class UserService(BaseDBService):
 
     async def last_unpaid_user_order(self, product_id, user_id):
-        stm = (
+        result = await self.session.execute(
             select(Order)
             .join(Order.product)
             .where(
@@ -28,13 +28,10 @@ class UserService(BaseDBService):
             )
             .order_by(desc(Order.created_at))
         )
-
-        res = await self.session.execute(stm)
-
-        return res.scalars().first()
+        return result.scalars().first()
 
     async def last_user_order(self, product_id, user_id):
-        stm = (
+        result = await self.session.execute(
             select(Order)
             .join(Order.product)
             .where(
@@ -43,14 +40,10 @@ class UserService(BaseDBService):
             )
             .order_by(desc(Order.created_at))
         )
-
-        result = await self.session.execute(stm)
-        result = result.scalars()
-        if result:
-            return result.first()
+        return result.scalars().first()
 
     async def last_paid_user_order(self, product_id, user_id):
-        stm = (
+        result = await self.session.execute(
             select(Order)
             .join(Order.product)
             .where(
@@ -60,8 +53,6 @@ class UserService(BaseDBService):
             )
             .order_by(desc(Order.created_at))
         )
-
-        result = await self.session.execute(stm)
         return result.scalars().first()
 
     async def get_by_customer_id(self, customer_id):
@@ -99,7 +90,7 @@ class UserService(BaseDBService):
                 .values(status=SubscriptionStatus.CANCELLED)
                 .execution_options(synchronize_session="fetch")
             )
-            logger.info(f'Subscription [{subscription.id}] canceled.')
+            logger.info(f'Subscription [%s] canceled.', subscription.id)
 
     async def update_subscription(self, user_id, status):
         if subscription := await self.active_subscription(user_id):
@@ -109,8 +100,7 @@ class UserService(BaseDBService):
                 .values(status=status)
                 .execution_options(synchronize_session="fetch")
             )
-            # await self.session.commit()
-            logger.info(f'Subscription [{subscription.id}] updated.')
+            logger.info(f'Subscription [%s] updated.', subscription.id)
             return subscription
 
     async def create_subscription(self, user_id, start,
@@ -125,22 +115,22 @@ class UserService(BaseDBService):
 
         if not await self.not_cancelled_subscription(user_id):
             order = await self.last_user_order(product_id, user_id)
-
-            order_id = order.id
             await self.add(subscription_db)
-            StripeManager.add_to_metadata(subscription_id, user_id, order_id)
+            StripeManager.add_to_metadata(subscription_id, user_id, order.id)
 
-            logger.info(f'Subscription for user [{user_id}] added to DB.')
-            return Create(**subscription_db.to_dict())
+            logger.info(f'Subscription for user [%s] added to DB.', user_id)
+            return Create.from_orm(subscription_db)
 
     async def deactivate_subscription(self, user_id):
-        user = await self.get_by_id(user_id)
-        if user.subscription.filter_by(status=SubscriptionStatus.ACTIVE):
-            # if await self.get_by_id(user_id) and await self.active_subscription(user_id):
+        result = await self.session.execute(
+                select(Subscription)
+                .filter_by(user_id=user_id, status=SubscriptionStatus.ACTIVE)
+        )
+        if result.scalar():
             StripeManager.deactivate_subscription(user_id)
 
             result = await self.update_subscription(user_id, SubscriptionStatus.INACTIVE)
-            logger.info(f'Subscription for user [{user_id}] deactivated. ')
+            logger.info(f'Subscription for user [%s] deactivated.', user_id)
             return result
 
 

@@ -15,7 +15,6 @@ class User(BaseModel):
     subscription = relationship(
         'Subscription',
         back_populates='user',
-        uselist=False,
         lazy='subquery'
     )
     order = relationship(

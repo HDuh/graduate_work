@@ -15,7 +15,6 @@ __all__ = (
 )
 
 logging_config.dictConfig(LOGGING)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__name__)))
 
 
 class AppConfig(BaseSettings):
@@ -25,6 +24,7 @@ class AppConfig(BaseSettings):
     base_dir: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     project_name: str
     logging = LOGGING
+    log_level: str
 
     class Config:
         env_prefix = 'glob_'
@@ -75,11 +75,8 @@ class SubscriptionStatus(str, Enum):
 
 
 class WebhookEvents(str, Enum):
-    # PAYMENT_CREATED = 'invoice.created'
     PAYMENT_SUCCESS = 'checkout.session.completed'
     PAYMENT_REFUND = 'customer.subscription.deleted'
-    # SUBSCRIPTION_UPDATED = 'customer.subscription.updated'
-    # SUBSCRIPTION_DELETED = 'customer.subscription.deleted'
 
 
 @lru_cache(maxsize=128)

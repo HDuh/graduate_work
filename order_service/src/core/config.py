@@ -3,7 +3,7 @@ from enum import Enum
 from functools import lru_cache
 from logging import config as logging_config
 
-from pydantic import BaseSettings, Field
+from pydantic import BaseSettings
 
 from .logger import LOGGING
 
@@ -15,7 +15,6 @@ __all__ = (
 )
 
 logging_config.dictConfig(LOGGING)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__name__)))
 
 
 class AppConfig(BaseSettings):
@@ -23,12 +22,12 @@ class AppConfig(BaseSettings):
     Конфигурация приложения.
     """
     base_dir: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    project_name: str = '...'
+    project_name: str
     logging = LOGGING
+    log_level: str
 
     class Config:
         env_prefix = 'glob_'
-        env_file = os.path.join(BASE_DIR, '.env')
         case_sensitive = False
 
 
@@ -36,12 +35,11 @@ class PostgresConfig(BaseSettings):
     """
     Конфигурация PostgreSQL.
     """
-    database_uri: str = Field(..., env='SQLALCHEMY_DATABASE_URI')
-    db_echo_log: bool = Field(..., env='SQLALCHEMY_DB_ECHO_LOG')
+    database_uri: str
+    db_echo_log: bool
 
     class Config:
         env_prefix = 'sqlalchemy_'
-        # env_file = os.path.join(BASE_DIR, '.env')
         case_sensitive = False
 
 

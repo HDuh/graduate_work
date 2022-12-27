@@ -34,13 +34,13 @@ class ProductService(BaseDBService):
             price=price,
             recurring_params=recurring_params,
             nickname=nickname,
-            product_stripe_id=product_stripe['id'])
+            product_stripe_id=product_stripe.stripe_id)
 
         product_db = Product(
             name=name,
             product_type=product_type,
-            product_stripe_id=product_stripe['id'],
-            price_stripe_id=price_stipe['id'],
+            product_stripe_id=product_stripe.stripe_id,
+            price_stripe_id=price_stipe.stripe_id,
             description=description,
             duration=duration,
             price=price,
@@ -49,14 +49,12 @@ class ProductService(BaseDBService):
         )
 
         await self.add(product_db)
-        logger.info(f'Product [{product_db.id}] added to DB.')
-
+        logger.info(f'Product [%s] added to DB.', product_db.id)
         return product_db
 
     async def delete_product(self, product_id):
         result = await self.remove(product_id)
-        logger.info(f'Product [{product_id}] removed from DB.')
-
+        logger.info(f'Product [%s] removed from DB.', product_id)
         StripeManager.archive_the_product(result)
 
     async def get_product_by_product_stripe_id(self, product_stripe_id):
@@ -64,8 +62,7 @@ class ProductService(BaseDBService):
             select(Product)
             .where(Product.product_stripe_id == product_stripe_id)
         )
-        if result := result.one_or_none():
-            return result[0]
+        return result.scalar()
 
 
 @lru_cache()
