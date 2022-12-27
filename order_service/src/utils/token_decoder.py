@@ -1,18 +1,17 @@
-import uuid
-
-import jwt
 import logging
+from uuid import UUID
+
+from src.core import settings
 
 __all__ = (
     'get_token_payload'
 )
 
 
-def get_token_payload(token: str) -> dict:
+def get_token_payload(token: str = settings.app.test_user_id) -> dict:
+    """ Mock для фронтенда """
     try:
-        # unverified_headers = jwt.get_unverified_header(token)
-        # return jwt.decode(token, key=os.getenv('JWT_SECRET'), algorithms=unverified_headers["alg"])
-        return {'user_id': uuid.uuid4()}  # Mock
+        return {'user_id': UUID(token)}  # Mock
     except Exception as _e:
         logging.error(f'Error JWT decode: {_e}')
         return {}

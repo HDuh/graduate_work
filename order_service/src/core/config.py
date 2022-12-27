@@ -23,6 +23,7 @@ class AppConfig(BaseSettings):
     """
     base_dir: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     project_name: str
+    test_user_id: str
     logging = LOGGING
     log_level: str
 

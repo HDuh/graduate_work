@@ -8,7 +8,6 @@ from starlette.responses import JSONResponse
 from src.schemas.order import OrderForBilling
 from src.services import BillingManager, get_billing_manager
 from src.services.order import get_order_service, OrderService
-from src.utils.http_bearer_security import security
 from src.utils.token_decoder import get_token_payload
 
 router = APIRouter()
@@ -30,7 +29,6 @@ def index(request: Request):
              summary='Create order',
              status_code=HTTPStatus.CREATED)
 async def create_order(order_schema: OrderForBilling,
-                       access_token=Depends(security),
                        order_service: OrderService = Depends(get_order_service),
                        billing_manager: BillingManager = Depends(get_billing_manager)) -> JSONResponse:
     """
@@ -40,7 +38,7 @@ async def create_order(order_schema: OrderForBilling,
 
         Gets __url link__ from _billing_api_ to create __check out session__ and return it.
     """
-    token_payload = get_token_payload(access_token.credentials)
+    token_payload = get_token_payload()
     if not (user_id := token_payload.get('user_id')):
         raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
 
